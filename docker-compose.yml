@@ -1,0 +1,33 @@
+version: "3.8"
+
+
+services:
+  nginx-proxy:
+    image: nginx:1.13-alpine
+    container_name: nginx-proxy
+    ports:
+      - "443:443"
+      - "80:80"
+    volumes:
+      - "./docker_config/nginx.conf:/etc/nginx/nginx.conf:ro"
+      - "./docker_config/certs:/certs"
+      - "./microservices/units-backend/static:/static"
+      - "./microservices/units-backend/media:/media"
+
+  units_backend:
+    container_name: units_backend
+    build: 
+      context: ./docker_config/python_config
+    working_dir: /home/python/app
+    ports:
+      - 8000:8000
+    volumes:
+    - "./microservices/units-backend:/home/python/app"
+    - "./docker_config/python_config/deploy_commands.sh:/deploy_commands.sh"
+    - "./logs:/logs"
+    command: 
+       - /bin/bash
+       - -c
+       - |
+        echo "Starting django server ..."
+        /deploy_commands.sh
