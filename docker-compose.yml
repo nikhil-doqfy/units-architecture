@@ -31,3 +31,5 @@ services:
        - |
         echo "Starting django server ..."
         /deploy_commands.sh
+    env_file:
+      - .env
