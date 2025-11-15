@@ -13,6 +13,7 @@ services:
       - "./docker_config/certs:/certs"
       - "./microservices/units-backend/static:/static"
       - "./microservices/units-backend/media:/media"
+      - "./microservices/units-frontend/dist/Doqfy/browser:/usr/share/nginx/html"
 
   units_backend:
     container_name: units_backend
@@ -33,3 +34,13 @@ services:
         /deploy_commands.sh
     env_file:
       - .env
+
+  units_frontend:
+    container_name: units_frontend
+    image: nginx:1.13-alpine
+    ports:
+      - "8002:80"
+    volumes:
+      - ./microservices/units-frontend/dist/Doqfy/browser:/usr/share/nginx/html
+    environment:
+      API_URL: ${API_URL}
