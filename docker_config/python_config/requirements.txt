@@ -34,3 +34,4 @@ pymodbus
 boto3
 psutil
 google-auth==2.43.0
+pdfkit
