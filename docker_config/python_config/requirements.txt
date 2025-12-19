@@ -36,3 +36,4 @@ psutil
 google-auth==2.43.0
 pdfkit
 wkhtmltopdf
+django-sslserver
