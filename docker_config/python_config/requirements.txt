@@ -38,3 +38,4 @@ pdfkit
 wkhtmltopdf
 django-sslserver
 deep-translator
+dotenv
