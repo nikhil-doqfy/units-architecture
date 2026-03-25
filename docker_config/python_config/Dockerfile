@@ -1,7 +1,7 @@
 FROM python:3.10.12
 ENV PYTHONUNBUFFERED 1
 
-# Install system dependencies for weasyprint
+# Install system dependencies for WeasyPrint
 RUN apt-get update && apt-get install -y \
     build-essential \
     libpango-1.0-0 \
