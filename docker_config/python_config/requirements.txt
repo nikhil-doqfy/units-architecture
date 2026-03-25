@@ -39,3 +39,4 @@ django-sslserver
 deep-translator
 dotenv
 pypdf
+pdfkit
