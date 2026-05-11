@@ -2,3 +2,7 @@ microservices
 # Environment files
 .env
 .env.*
+
+.django_cache
+.github
+.DS_Store
