@@ -40,3 +40,4 @@ deep-translator
 dotenv
 pypdf
 pdfkit
+drf-yasg
