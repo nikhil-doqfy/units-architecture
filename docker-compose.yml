@@ -2,6 +2,22 @@ version: "3.8"
 
 
 services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: units_postgres
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+
   nginx-proxy:
     image: nginx:1.13-alpine
     container_name: nginx-proxy
@@ -17,9 +33,11 @@ services:
 
   units_backend:
     container_name: units_backend
-    build: 
+    build:
       context: ./docker_config/python_config
     working_dir: /home/python/app
+    depends_on:
+      - postgres
     ports:
       - 8000:8000
     volumes:
@@ -44,3 +62,6 @@ services:
       - ./microservices/units-frontend/dist/Units/browser:/usr/share/nginx/html
     environment:
       API_URL: ${API_URL}
+
+volumes:
+  postgres_data:
