@@ -18,7 +18,7 @@ services:
     restart: unless-stopped
 
 
-  nginx-proxy:
+  nginx_proxy:
     image: nginx:1.13-alpine
     container_name: nginx-proxy
     ports:
