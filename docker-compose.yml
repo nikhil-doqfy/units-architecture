@@ -53,6 +53,27 @@ services:
     env_file:
       - .env
 
+  units_finance:
+    container_name: units_finance
+    build:
+      context: ./microservices/units-finance
+    working_dir: /home/python/app
+    depends_on:
+      - postgres
+    ports:
+      - 8001:8001
+    volumes:
+    - "./microservices/units-finance:/home/python/app"
+    - "./logs:/logs"
+    command:
+       - /bin/bash
+       - -c
+       - |
+        echo "Starting finance django server ..."
+        /home/python/app/deploy_commands.sh
+    env_file:
+      - .env
+
   units_frontend:
     container_name: units_frontend
     image: nginx:1.13-alpine
