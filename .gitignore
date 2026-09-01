@@ -6,3 +6,8 @@ microservices
 .django_cache
 .github
 .DS_Store
+
+# BMAD-METHOD
+.claude/
+_bmad/
+_bmad-output/
