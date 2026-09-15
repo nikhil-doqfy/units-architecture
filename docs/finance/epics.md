@@ -102,6 +102,12 @@ FR12: Epic 3 - Balance Sheet report
 FR13: Epic 3 - Ageing report
 FR14: Epic 4 - Manual bank statement import
 FR15: Epic 4 - Match statement lines to Ledger entries
+FR16: Epic 5 - Manual journal entries (Ledger → General → Cash → Manual Entries)
+FR17: Epic 5 - PMC charge types post to the ledger as manual entries
+FR18: Epic 5 - Chart of Accounts sub-categories
+FR19: Epic 5 - Ageing creditor/debtor split with contract-based bucket anchor
+FR20: Epic 5 - P&L base rent income / VAT line-item split and Balance Sheet sub-category grouping
+FR21: Epic 5 - All-entries Ledger view with filters
 
 ## Epic List
 
@@ -125,7 +131,12 @@ An operator can upload a bank statement and reconcile it against posted Ledger e
 **FRs covered:** FR-14, FR-15
 **Also carries:** simple heuristic matching (NFR-2)
 
-**Dependency flow:** Epic 1 → Epic 2 → {Epic 3, Epic 4} (Epics 3 and 4 are independent of each other).
+### Epic 5: Demo Feedback — Manual Entries, Charge Postings, Ageing Split, P&L/Balance Sheet Line Items, All-Entries Ledger View
+Post-demo feedback: add manual journal entries under Ledger → General → Cash, post user-configured PMC charge types through that same path, split Ageing into Creditor/Debtor sections with contract-based bucketing, add Base Rent Income/VAT and Fixed/Current/Other-Current-Asset + Capital/Share-Capital line items to P&L and Balance Sheet, and add a filterable all-entries Ledger view.
+**FRs covered:** FR-16, FR-17, FR-18, FR-19, FR-20, FR-21
+**Also carries:** `JournalEntry.source_lease_transaction_id` becomes nullable + new `source_type` discriminator, new `PMCChargeType` model, new `Account.account_subtype` field with backfill of existing seed rows
+
+**Dependency flow:** Epic 1 → Epic 2 → {Epic 3, Epic 4} (Epics 3 and 4 are independent of each other). Epic 5 depends on Epics 1–3 (Ledger, CoA, and Reporting must exist); within Epic 5: Story 5.1 → Story 5.2; Story 5.3 → Story 5.6; Story 5.1 → Story 5.7 (the all-entries view lists manual entries alongside posting-engine entries); Story 5.4 and Story 5.5 are independent.
 
 ## Epic 1: Finance Foundation & PMC Activation
 
@@ -556,3 +567,175 @@ So that Bank Reconciliation always completes correctly, even when the simple heu
 **Given** a Bank Journal entry already matched and confirmed
 **When** the system attempts to suggest or manually pair it with a second statement line
 **Then** it is rejected — an entry cannot be matched to more than one statement line at a time (FR-15)
+
+## Epic 5: Demo Feedback — Manual Entries, Charge-Driven Postings, Ageing Split, P&L Line Items, Balance Sheet Sub-Categories
+
+**Origin:** post-demo feedback (2026-09-11), captured verbatim below, decomposed into FR-16 through FR-20.
+
+> 1. Manual entries should be in ledger entries → general → cash → manual entries
+> 2. Make entries of charges which are added by user for PMC in profile setting (e.g. maintenance charges, security charges, etc.) in ledger entries → general → cash → manual entries
+> 3. Ageing of cheque/invoice — creditors (customer) / debtors (vendor) sections | outstanding 30 days in contract, 31 day is +1 ageing
+> 4. P&L without VAT income, base rent income as its own line
+> 5. Fixed Assets, Current Assets, Other Current Assets, Liabilities, Capital Contribution, Share Capital
+
+**Verified current-state gaps (code survey, 2026-09-11):**
+- No manual journal entry path exists anywhere — `JournalEntry.source_lease_transaction_id` is a required FK; every entry is programmatically posted from a `LeaseTransaction` event (`ledger/posting.py`). No "create entry" endpoint, no frontend page, no ledger navigation hierarchy (flat CoA → ledger-lines drill-down only, per Story 4.2).
+- `FinancePMCProfile` has no charge-type/fee-schedule concept at all — no settings module, no "maintenance charge"/"security charge" config anywhere in backend or frontend.
+- Ageing (`ledger/reports.py: compute_ageing`) is AR/tenant-only (debtor side), anchored on `cheque_date`, buckets `1-30 / 31-60 / 61-90 / 90+`. No AP/vendor (creditor) side exists. No contract-start-date anchoring exists — only cheque date.
+- P&L (`compute_profit_loss`) returns a flat `income_accounts`/`expense_accounts` list off Trial Balance — there is only one Income account (`Rent Income`); no VAT-vs-base-rent split exists because there's nothing to split (no VAT income line currently mixed in, but also no distinct "base rent income" line item).
+- Chart of Accounts (`ledger/seed.py`) is a fixed, hardcoded 9-row seed using only 5 flat `account_type` values (Asset/Liability/Income/Expense/Equity) — no sub-categorization. Fixed Assets, Current Assets, Other Current Assets, a Liabilities split, Capital Contribution, and Share Capital do not exist as accounts or as a category concept.
+
+**FRs covered:** FR-16, FR-17, FR-18, FR-19, FR-20
+**Dependency flow:** Story 5.3 (CoA sub-categories) is a prerequisite for Story 5.5 (new account rows need a category to slot into); Story 5.1 (manual entry capability) is a prerequisite for Story 5.2 (charge postings reuse the manual-entry path). Story 5.4 (ageing creditor/debtor split) and Story 5.6 (P&L line items) are independent of the others and of each other.
+
+### Story 5.1: Manual journal entries (Ledger → General → Cash → Manual Entries)
+
+As a PMC operator,
+I want to create a manual journal entry directly in the Ledger, reached via Ledger Entries → General → Cash → Manual Entries,
+So that I can record cash transactions and corrections that don't originate from a `LeaseTransaction`.
+
+**Acceptance Criteria:**
+
+**Given** the Ledger currently only supports programmatic postings (`source_lease_transaction_id` required)
+**When** this story is implemented
+**Then** `JournalEntry.source_lease_transaction_id` becomes nullable, and a new `source_type` discriminator (e.g. `LEASE_TRANSACTION` / `MANUAL`) is added so reporting and drill-down can distinguish manual entries from posting-engine entries without breaking existing FK-based traceability (FR-16)
+
+**Given** a new `POST /ledger/manual-entries` endpoint (function-based `@api_view`, per AD-1 convention)
+**When** an operator submits a set of debit/credit lines with an account, amount, and memo for each
+**Then** the entry is rejected unless `sum(debits) == sum(credits)` — no unbalanced manual entry is ever persisted (consistent with NFR-1's atomicity invariant)
+
+**Given** the frontend navigation
+**When** an operator opens the Ledger section
+**Then** a new hierarchy is reachable: **Ledger Entries → General → Cash → Manual Entries**, landing on a form to add a manual entry and a list of previously entered manual entries for the active `FinancePMCProfile`
+
+**Given** a posted manual entry
+**When** it appears in Trial Balance, P&L, Balance Sheet, or account ledger drill-down
+**Then** it is included in balance calculations identically to a posting-engine entry — no report special-cases `source_type = MANUAL`
+
+**And** every manual entry is scoped to the active `FinancePMCProfile` — no cross-PMC manual posting is possible (consistent with AD-18)
+
+### Story 5.2: PMC charge types post to the ledger as manual entries
+
+As a PMC operator,
+I want charges I configure in PMC profile settings (e.g. maintenance charge, security charge) to generate ledger entries when applied,
+So that recurring PMC-defined charges show up in the Ledger under Manual Entries instead of being invisible to accounting.
+
+**Acceptance Criteria:**
+
+**Given** `FinancePMCProfile` currently has no charge-type concept
+**When** this story is implemented
+**Then** a new `PMCChargeType` model is added (name, default amount, linked Income/Expense account, active flag), scoped to a `FinancePMCProfile`, editable from PMC profile settings in the frontend
+
+**Given** a PMC operator applies a configured charge type to a unit/tenant
+**When** the charge is recorded
+**Then** the system posts a balanced manual-entry-style Journal Entry (via Story 5.1's path, `source_type = MANUAL`) crediting the charge type's linked Income account and debiting AR/Bank as appropriate, visible under Ledger Entries → General → Cash → Manual Entries
+
+**Given** a charge type is marked inactive
+**When** an operator tries to apply it
+**Then** the system rejects the attempt — inactive charge types cannot generate new postings, but existing postings from when it was active remain untouched
+
+**And** each charge-generated entry retains a reference back to the `PMCChargeType` and the triggering charge record, so drill-down can explain "why" the entry exists, even though it is structurally a manual entry
+
+### Story 5.3: Chart of Accounts sub-categories
+
+As the Finance system,
+I want the Chart of Accounts to support sub-categories (Fixed Assets, Current Assets, Other Current Assets, Liabilities, Capital Contribution, Share Capital) instead of only the five flat account types,
+So that Balance Sheet and CoA views can group accounts the way an accountant expects, and Story 5.5 has categories to file new accounts under.
+
+**Acceptance Criteria:**
+
+**Given** `Account.account_type` currently only supports Asset/Liability/Income/Expense/Equity
+**When** this story is implemented
+**Then** a new `account_subtype` field is added (e.g. `FIXED_ASSET`, `CURRENT_ASSET`, `OTHER_CURRENT_ASSET`, `LIABILITY` (unchanged split retained), `CAPITAL_CONTRIBUTION`, `SHARE_CAPITAL`), nullable/defaulted for existing accounts so no migration breaks existing data
+
+**Given** the existing 9-row seed (`ledger/seed.py`)
+**When** it is inspected after this story
+**Then** every existing seeded account is backfilled with the correct `account_subtype` (e.g. `Bank` → Current Asset, `Security Deposits Held` → Liability) so no account is left uncategorized
+
+**Given** the Chart of Accounts frontend view and Balance Sheet report
+**When** either is rendered
+**Then** accounts are grouped by `account_subtype` under their parent `account_type`, matching standard PMC accounting presentation (Fixed Assets and Current Assets under Assets, etc.)
+
+### Story 5.4: Ageing — creditor (vendor/AP) and debtor (customer/AR) sections, contract-based bucket anchor
+
+As a PMC operator,
+I want the Ageing report split into Debtors (tenant/customer AR) and Creditors (vendor/AP) sections, with buckets anchored to the contract's due date rather than only cheque date, and day 31 landing in the next bucket,
+So that I can see both sides of outstanding aging correctly, matching how the contract defines "30 days outstanding."
+
+**Acceptance Criteria:**
+
+**Given** `compute_ageing` currently only covers AR/tenant-side unresolved `LeaseTransaction` rows
+**When** this story is implemented
+**Then** the Ageing report returns two sections — **Debtors** (existing AR/tenant logic, unchanged bucketing source) and **Creditors** (AP — PMC Commission and any vendor-payable accounts), each independently bucketed (FR-13 extended)
+
+**Given** a contract specifies its outstanding window as 30 days
+**When** an item is exactly 30 days outstanding
+**Then** it remains in the current/1-30 bucket; on day 31 it moves into the 31-60 bucket — the +1 rollover is anchored to the contract's due-date window, not a hardcoded cheque-date offset (FR-13 revision)
+
+**Given** a cheque/invoice with no contract-defined due-date window
+**When** ageing is computed
+**Then** it falls back to the existing `cheque_date`-anchored logic (no regression for data that predates contract-level due-date config)
+
+**And** both Debtor and Creditor sections continue to paginate via `prepare_response()`'s `paginator` argument, never nested inside `content` (Structural Seed, AD-3)
+
+**Status (2026-09-11): Marked not applicable / deferred, human-confirmed.** Investigation before implementation found neither prerequisite this story assumed actually exists: (1) no contract-level due-date/payment-term/net-days field exists anywhere on units-backend's `Lease` model — the only per-installment date is `LeaseTransaction.cheque_date`, already the existing anchor, and its bucket-boundary rollover (day 31 → 31-60) is already correct as shipped in Story 3.5; (2) no Vendor/creditor model exists anywhere in units-backend — the only Liability-type account resembling a payable is "AP — PMC Commission" (posted via `post_commission_split`), which has no independent due-date of its own to age against. Human decision: do not repurpose `Lease.grace_start_date`/`grace_end_date` (unconfirmed semantics) as a due-date substitute, and do not build a Creditors section from `AP — PMC Commission` balances alone. This story is deferred until a real contract due-date and vendor/creditor concept exist in units-backend; the existing Ageing report (Debtors/AR-side, `cheque_date`-anchored) ships unchanged.
+
+### Story 5.5: P&L — base rent income and VAT separated as distinct line items
+
+As a PMC admin or Owner,
+I want the P&L statement to show Base Rent Income as its own line, separate from VAT, rather than a single blended Income figure,
+So that I can read actual rental profitability without VAT distorting the income line.
+
+**Acceptance Criteria:**
+
+**Given** `compute_profit_loss` currently returns a flat `income_accounts` list with only `Rent Income`
+**When** this story is implemented
+**Then** the P&L response separates **Base Rent Income** (rent principal only, excluding any VAT/tax component) as its own labeled line item, distinct from any VAT-related line, within the Income section (FR-11 revision)
+
+**Given** a rent posting that includes a VAT component (from Story 2.7's commission VAT or any future VAT-bearing income)
+**When** P&L is generated
+**Then** VAT amounts are excluded from Base Rent Income and, if present, shown as their own separate line — never summed into rent income
+
+**Given** a P&L response and a Trial Balance response for the same `FinancePMCProfile`/period
+**When** both are compared
+**Then** the net profit/loss figure is unchanged from today's calculation — this story is a presentation/line-item split, not a change to the underlying net figure (no regression to FR-11's original invariant)
+
+### Story 5.6: Liabilities, Capital Contribution, and Share Capital in Balance Sheet
+
+As a PMC admin or Owner,
+I want the Balance Sheet to show Capital Contribution and Share Capital under Equity, and Liabilities broken out consistently with the new CoA sub-categories,
+So that the Balance Sheet reflects standard PMC equity/liability structure instead of a single flat Liability/Equity bucket.
+
+**Acceptance Criteria:**
+
+**Given** Story 5.3 adds `account_subtype` including `CAPITAL_CONTRIBUTION` and `SHARE_CAPITAL`
+**When** this story is implemented
+**Then** new seed/operator-creatable Accounts exist for **Capital Contribution** and **Share Capital**, both under `account_type = Equity`, distinguished by `account_subtype`
+
+**Given** the Balance Sheet report (`compute_balance_sheet`)
+**When** it is generated
+**Then** it groups Asset accounts by Fixed/Current/Other Current, groups Liability accounts under Liabilities, and groups Equity accounts showing Capital Contribution and Share Capital as distinct lines — while the top-level invariant Assets = Liabilities + Equity still holds exactly (no change to FR-12's structural check)
+
+**And** existing Balance Sheet consumers (frontend `pages/finance/balance-sheet/`) are updated to render the new grouped structure without breaking the as-of-date query contract
+
+### Story 5.7: All-entries Ledger view with filters
+
+As a PMC operator,
+I want a single page showing all Ledger (Journal Entry) entries for my PMC, filterable by date range, account, and source type (manual vs. posting-engine),
+So that I don't have to drill into one account at a time (`ledger-detail`) to see everything that's been posted.
+
+**Acceptance Criteria:**
+
+**Given** the Ledger currently only supports per-account drill-down (`account_ledger_lines`, `ledger-detail.component.ts`) with no cross-account listing
+**When** this story is implemented
+**Then** a new `GET /ledger/entries` endpoint returns all `JournalEntry`/`LedgerLine` rows for the active `FinancePMCProfile`, paginated via `prepare_response()`'s `paginator` argument (Structural Seed, AD-3), including both posting-engine and manual entries (Story 5.1)
+
+**Given** the new endpoint
+**When** a caller supplies query params for date range, account, and/or `source_type`
+**Then** results are filtered server-side accordingly; omitting a filter returns the unfiltered set for the PMC
+
+**Given** the frontend
+**When** an operator opens **Ledger Entries → General**
+**Then** they land on this new all-entries list page (not only the per-account drill-down), with filter controls for date range, account, and source type, reusing the shared report table/date-picker component (Story 2.1's `shared-report-table`) for consistency with other Finance pages
+
+**And** each row links through to the existing per-account `ledger-detail` view or shows enough detail (account, debit/credit, memo, source) inline that an operator doesn't need to cross-reference another page
