@@ -182,3 +182,19 @@ Collected (register only, no GL) → deposited (R5/R6, expected clearing date = 
 - **B4** Termination penalty = 2 × `Lease.rent` (monthly), via the Charges master (`MONTHS_OF_RENT`, months = 2). An authorized user may waive it partly or fully. The waiver is audited (calculated, waived and final amount, who, when, reason) and never overwrites the calculation.
 
 Consequences for §5: R3/R4 credit the **net** month amount (no discount line). R14's base is the month's net distributable (recognized rent − expenses − charges). New rule R20: **leasing commission invoiced at lease start**, Dr `AR_TENANT` / Cr `LEASING_COMMISSION_INCOME`, `VAT_OUTPUT`.
+
+## 9. Owner accounting as implemented (Phase 9)
+
+- **Owner charge** (charges the company makes to a MANAGED unit's owners, confirmed 2026-09-27): chosen from the Charges master (ADMINISTRATIVE or OTHER, fixed amount; editable only if the charge is editable), entered per unit and date. Dr `RENTAL_INCOME_CLEARING` amount + VAT / Cr `OTHER_CHARGE_INCOME`, `VAT_OUTPUT` (VAT = the charge's tax code).
+- **Expenses (R12/R13)** are posted when recorded: Cr `AP_VENDOR` (or the vendor's own payable account) with the vendor dimension, or the bank/cash account it was paid from. The amount is gross; input VAT is future scope (D7).
+- **Settlement (R14 + R15, one journal)** per MANAGED unit and month, dated month end, available once the month has ended:
+  - revenue = the unit's `RENTAL_INCOME_CLEARING` revenue-recognition lines in the month
+  - net distributable = revenue − expenses − owner charges (charge VAT excluded from the fee base)
+  - fee = net distributable × `Unit.commission_percent` when positive, else 0; fee VAT from the `MANAGEMENT_FEE` tax rule
+  - owners' total = net distributable − charge VAT − fee − fee VAT, split by the ownership in force at month end (must total 100%; the last owner absorbs rounding). A negative total is posted as a debit to the owners' payable.
+  - fee invoice number `MGMT-{pmc}-{n}`.
+  - Refused while the unit has undelivered (PENDING/FAILED) accounting events, or if the unit has no commission %, no tax rule or ownership ≠ 100%.
+  - Maker-checker: prepared as DRAFT, approved and posted by a different user. Approval recalculates and refuses if the figures changed since the draft. Expenses and charges cannot be dated into a settled month.
+- **Payout (R16)** per owner: DRAFT, approved by a different user, limited to the owner's payable balance. Dr `OWNER_PAYABLE` (owner dimension) / Cr the chosen bank account.
+- **Payouts due**: per owner, the payable balance for completed settlement periods (monthly, quarterly or half-yearly, counted from the PMC's fiscal-year start month) less payouts made.
+- **Owner statement**: owner → unit → month (settlement figures, owner %, owner amount) → lease → installment → journals, plus expenses, charges and the payable movements with running balance. Owners see only their own statement.
