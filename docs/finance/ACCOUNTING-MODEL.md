@@ -265,3 +265,8 @@ Finance rights use the existing Roles & Permissions screen and its View / Create
 - Existing roles named "Admin" were granted every finance module (user_service migrations 0004 and 0005). Other roles get none until granted, and a manager with no role gets nothing.
 - Owners and tenants aren't governed by roles. They never write, and read only their own data.
 - A user's permissions reach the frontend at login, so a changed role takes effect in the UI after signing in again. The servers apply it immediately.
+
+## 13. Testing (Phase 14)
+
+- **Unit tests:** `units-finance` (`manage.py test ledger`) and `units-backend` (the `billing`, `lease`, `property` finance tests) cover every posting rule, workflow, report and permission.
+- **End-to-end:** `important_scripts/finance_e2e/run_e2e.sh` runs the 20 required flows across both services on a throwaway database with real event delivery, and reports PASS/FAIL per flow. Result on 2026-09-27: **20/20**. Tests 6–8 follow the approved 2-return cheque rule.
