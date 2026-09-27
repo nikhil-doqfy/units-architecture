@@ -250,7 +250,8 @@ Finance rights use the existing Roles & Permissions screen and its View / Create
 | Finance Reports | reports, journals, statements, CSV | | | |
 | Finance Setup | failed postings | add masters | edit masters and settings; retry failed postings | deactivate masters |
 | Accounting Periods | | add periods | close / reopen | |
-| Cheques & Collections | lease accounts, receipts, reconciliation, provider settlements | collect; new/replacement cheque | deposit / clear / return cheques; bank reconciliation; provider settlements | |
+| Cheques & Collections | lease accounts, receipts | collect; new/replacement cheque | deposit / clear / return cheques | |
+| Banking | bank reconciliation, suggested matches, provider settlements | | import statements; match / un-match; record provider settlements and bank charges | |
 | Lease Termination | preview | terminate; refund draft | waive the penalty | |
 | Adjustment Journals | see | create, submit | edit draft | delete draft |
 | Owner Accounting | owner pages and statements | expenses, owner charges, settlement and payout drafts | recalculate settlement | delete drafts |
@@ -259,7 +260,8 @@ Finance rights use the existing Roles & Permissions screen and its View / Create
 | Approve Owner Payouts | | | approve and post | |
 | Approve Tenant Refunds | | | approve and post | |
 
-- Reference data (accounts, vendors, expense types, payment methods, bank accounts, return reasons, tax rules) stays readable by managers, because other screens use it. Only writing it needs Finance Setup.
-- Existing roles named "Admin" were granted every finance module (user_service migration 0004). Other roles get none until granted, and a manager with no role gets nothing.
+- Reference data (accounts, vendors, expense types, payment methods, bank accounts, charges, return reasons, tax rules) stays readable by managers without Finance Setup, because operational screens use it in pickers. Creating, editing, deleting or configuring it needs Finance Setup (confirmed).
+- Banking is its own module (confirmed): Cheques & Collections covers only tenant payment instruments (PDC → deposit → clearing → return → collection).
+- Existing roles named "Admin" were granted every finance module (user_service migrations 0004 and 0005). Other roles get none until granted, and a manager with no role gets nothing.
 - Owners and tenants aren't governed by roles. They never write, and read only their own data.
 - A user's permissions reach the frontend at login, so a changed role takes effect in the UI after signing in again. The servers apply it immediately.
