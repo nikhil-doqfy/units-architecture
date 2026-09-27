@@ -31,7 +31,7 @@ services:
   units_backend:
     container_name: units_backend
     build:
-      context: ./docker_config/python_config
+      context: ./docker_config/units_backend
     working_dir: /home/python/app
     depends_on:
       - postgres
@@ -39,7 +39,7 @@ services:
       - 8000:8000
     volumes:
     - "./microservices/units-backend:/home/python/app"
-    - "./docker_config/python_config/deploy_commands.sh:/deploy_commands.sh"
+    - "./docker_config/units_backend/deploy_commands.sh:/deploy_commands.sh"
     - "./logs:/logs"
     command: 
        - /bin/bash
@@ -50,24 +50,76 @@ services:
     env_file:
       - .env
 
-  units-finance:
-    container_name: units_finance
+  redis:
+    image: redis:7-alpine
+    container_name: units_redis
+    restart: unless-stopped
+    # Backs units-finance's UAE e-invoicing Celery queue (FINANCE_REDIS_URL,
+    # DB index 1) and units-backend's own Celery queue
+    # (property_management/celery_config.py, REDIS_URL, DB index 0).
+
+  units_backend_celery_worker:
+    container_name: units_backend_celery_worker
     build:
-      context: ./microservices/units-finance
+      context: ./docker_config/units_backend
     working_dir: /home/python/app
     depends_on:
       - postgres
+      - redis
+      - units_backend
+    volumes:
+      - "./microservices/units-backend:/home/python/app"
+      - "./logs:/logs"
+    command:
+      - /bin/bash
+      - -c
+      - |
+        echo "Starting units-backend Celery worker ..."
+        celery -A property_management worker -l info
+    env_file:
+      - .env
+
+  units_backend_celery_beat:
+    container_name: units_backend_celery_beat
+    build:
+      context: ./docker_config/units_backend
+    working_dir: /home/python/app
+    depends_on:
+      - postgres
+      - redis
+      - units_backend
+    volumes:
+      - "./microservices/units-backend:/home/python/app"
+      - "./logs:/logs"
+    command:
+      - /bin/bash
+      - -c
+      - |
+        echo "Starting units-backend Celery beat ..."
+        celery -A property_management beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    env_file:
+      - .env
+
+  units-finance:
+    container_name: units_finance
+    build:
+      context: ./docker_config/units_finance
+    working_dir: /home/python/app
+    depends_on:
+      - postgres
+      - redis
     ports:
       - 8001:8001
     volumes:
     - "./microservices/units-finance:/home/python/app"
+    - "./docker_config/units_finance/deploy_commands.sh:/deploy_commands.sh"
     - "./logs:/logs"
     command:
        - /bin/bash
        - -c
        - |
         echo "Starting finance django server ..."
-        /home/python/app/deploy_commands.sh
+        /deploy_commands.sh
     env_file:
       - .env
 

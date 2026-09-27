@@ -32,6 +32,7 @@ cryptography
 pycryptodome
 pymodbus
 boto3
+python-dateutil
 psutil
 google-auth==2.43.0
 weasyprint
@@ -41,3 +42,4 @@ dotenv
 pypdf
 pdfkit
 drf-yasg
+html-testRunner
