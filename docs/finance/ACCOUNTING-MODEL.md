@@ -224,3 +224,18 @@ Confirmed 2026-09-27: the termination date is the tenant's last day and is inclu
 - **Drill-down:** owner → unit (owner statement) → lease → installment (`/api/lease/installments` shows each item's termination role: balance due, penalty, charge, credited, closed, cancelled; plus its invoice and credit notes) → transaction (journals by source `INVOICE`, `CREDIT_NOTE`, `TERMINATION`, `CHEQUE` or `COLLECTION`).
 - **Refund payment** (`RFD-{pmc}-{n}`): a DRAFT for the full refund, approved and posted by a different user (Dr `TENANT_REFUND_PAYABLE` / Cr the bank account).
 - **Not refunded:** leasing commission (company income at lease start).
+
+## 11. Reports (Phase 12)
+
+All ledger reports count POSTED journals only, by accounting date, and are built from ledger lines and their dimensions.
+
+| Report | Service / endpoint | What it shows |
+|---|---|---|
+| General Ledger | finance `GET /reports/general-ledger` | Per account: opening balance, the period's lines with running balance (each linked to its journal and source), closing balance. Filters: account, unit, lease, tenant, owner, property. Matches the Trial Balance. |
+| Unit Statement | finance `GET /reports/unit-statement` | The unit's key figures by posting role (rent invoiced / credited / earned for company or owners, VAT, collected, expenses, management fee, commission, penalties and charges, distributed to owners; end balances: tenant, unearned rent, deposit held, owners' unsettled share) and its ledger. Owners see only their own units. |
+| Tenant Statement | finance `GET /reports/tenant-statement` | Statement of account on AR (charges vs payments and credits) with running balance, for one lease or all the tenant's leases, plus deposit held and refund payable. |
+| Owner Statement | finance `GET /owners/statement` | Phase 9: owner → unit → month → lease → installment → journal. |
+| Collections | backend `GET /api/reports/collections` | Every settled collection (cash, card, transfer, cleared cheques) in the period with its receipt, totalled by payment method. |
+| PDC Status | backend `GET /api/reports/pdc-status` | The cheque register on a date: by status; cheques in hand by due date (overdue = cheque date passed, not deposited; 0–30, 31–60, 61–90, >90 days); deposited cheques past their expected clearing date. |
+
+The ledger reports, the tenant/unit statements and the operational reports are company-only (property managers), except the unit and owner statements for the owner's own units. Every report page exports to CSV.
