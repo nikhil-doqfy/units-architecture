@@ -239,3 +239,27 @@ All ledger reports count POSTED journals only, by accounting date, and are built
 | PDC Status | backend `GET /api/reports/pdc-status` | The cheque register on a date: by status; cheques in hand by due date (overdue = cheque date passed, not deposited; 0–30, 31–60, 61–90, >90 days); deposited cheques past their expected clearing date. |
 
 The ledger reports, the tenant/unit statements and the operational reports are company-only (property managers), except the unit and owner statements for the owner's own units. Every report page exports to CSV.
+
+## 12. Finance permissions (Phase 13, approved 2026-09-27)
+
+Finance rights use the existing Roles & Permissions screen and its View / Create / Edit / Delete checkboxes. They are enforced by both services (units-backend and units-finance), and the UI hides what the user can't do. Maker-checker applies on top: nobody approves what they created.
+
+| Module | View | Create | Edit | Delete |
+|---|---|---|---|---|
+| Finance | open the Finance menu | | | |
+| Finance Reports | reports, journals, statements, CSV | | | |
+| Finance Setup | failed postings | add masters | edit masters and settings; retry failed postings | deactivate masters |
+| Accounting Periods | | add periods | close / reopen | |
+| Cheques & Collections | lease accounts, receipts, reconciliation, provider settlements | collect; new/replacement cheque | deposit / clear / return cheques; bank reconciliation; provider settlements | |
+| Lease Termination | preview | terminate; refund draft | waive the penalty | |
+| Adjustment Journals | see | create, submit | edit draft | delete draft |
+| Owner Accounting | owner pages and statements | expenses, owner charges, settlement and payout drafts | recalculate settlement | delete drafts |
+| Approve Adjustments | | | approve / reject adjustments; reverse a posted journal | |
+| Approve Owner Settlements | | | approve and post | |
+| Approve Owner Payouts | | | approve and post | |
+| Approve Tenant Refunds | | | approve and post | |
+
+- Reference data (accounts, vendors, expense types, payment methods, bank accounts, return reasons, tax rules) stays readable by managers, because other screens use it. Only writing it needs Finance Setup.
+- Existing roles named "Admin" were granted every finance module (user_service migration 0004). Other roles get none until granted, and a manager with no role gets nothing.
+- Owners and tenants aren't governed by roles. They never write, and read only their own data.
+- A user's permissions reach the frontend at login, so a changed role takes effect in the UI after signing in again. The servers apply it immediately.
