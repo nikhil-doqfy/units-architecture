@@ -11,7 +11,7 @@ Business rules: approved answers Q1–Q25 and B1–B8. Open decisions are listed
 2. **Posting rules use logical roles, never accounts.** A rule says "debit `AR_TENANT`". `AccountMapping` resolves the role to an account in the PMC's own chart of accounts (block override, then property override, then PMC default). An unmapped role stops the posting with an error, and the event shows in Failed Postings.
 3. **The product has its own Chart of Accounts** (§3). No ARESTA code or name is copied or hardcoded. ARESTA is used only to check that every existing business scenario is covered (§7).
 4. **Detail comes from dimensions, not from extra accounts.** One `AR_TENANT` account serves every tenant; one `OWNER_PAYABLE` serves every owner. Each ledger line carries property, block, unit, lease, tenant, owner, installment and vendor ids, so statements per unit, tenant or owner are queries, not sub-ledgers. (ARESTA keeps per-building and per-landlord accounts; this product doesn't need to.)
-5. **Rates come from masters, never code.** Rental VAT comes from `TaxRule`. The management fee % comes from `Unit.commission_percent`. The management-fee VAT, return charges, channel charges and penalties come from the Charges master. Every rate used is snapshotted on the document it applies to.
+5. **Rates come from masters, never code.** VAT comes from `TaxRule`, by what is being taxed (rent, leasing commission, management fee; system defaults: rent 0% residential and 5% commercial/industrial, commission 5%, fee 5%) and the unit's usage. The management fee % comes from `Unit.commission_percent`. Return charges, channel charges and penalties (amount and VAT %) come from the Charges master. Every rate used is snapshotted on the document it applies to.
 
 ## 2. Posting roles (`AccountMapping` keys)
 
@@ -142,7 +142,7 @@ Clearing ends the month at 0, and Deferred holds the unearned balance of any mul
 
 ## 6. Cheque lifecycle (unchanged, confirmed)
 
-Collected (register only, no GL) → deposited (R5/R6, expected clearing date = deposit date + the bank account's clearing days) → cleared (R7), or returned (R8, plus the optional R9). Maximum **2 returns per installment**, deposit included:
+Collected (register only, no GL) → deposited (R5/R6, expected clearing date = deposit date + the bank account's clearing days; a post-dated cheque can only be deposited on or after its cheque date) → cleared (R7), or returned (R8, plus the optional R9). Maximum **2 returns per installment**, deposit included:
 - After return #1, a replacement cheque is required (recorded by the accountant).
 - After return #2, no further cheque is accepted on any creation path. Only a non-cheque method is allowed (R10).
 
