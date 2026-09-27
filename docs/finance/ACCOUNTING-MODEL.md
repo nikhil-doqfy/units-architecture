@@ -215,9 +215,12 @@ Confirmed 2026-09-27: the termination date is the tenant's last day and is inclu
   2. Every undeposited PDC becomes `RETURNED_TO_TENANT`. An uncollected deposit is cancelled.
   3. Rent is recognized up to the termination date. The last month is prorated and dated on the termination date; nothing is recognized after it.
   4. A credit note (`CN-{pmc}-{n}`, R19) reverses each invoiced installment's unearned net and its VAT, in proportion.
-  5. Debit notes are issued for the penalty (Charges master `TERMINATION_PENALTY`, `MONTHS_OF_RENT`, 2 × `Lease.rent`, VAT per the charge, after any audited waiver) and for chosen charges (Administrative/Other; fixed or months-of-rent).
-  6. `TERMINATION_SETTLED`: the held deposit is applied, every open tenant balance of the lease is closed (status `CLOSED`), and the net becomes either `TENANT_REFUND_PAYABLE` or one `TERMINATION_BALANCE` item due from the tenant, collected through the normal collection flow.
+  5. Debit notes are issued for the penalty (Charges master `TERMINATION_PENALTY`, `MONTHS_OF_RENT`, 2 × `Lease.rent`, VAT per the charge, after any audited waiver) and for chosen charges (Administrative, Other and **Miscellaneous** — breakage, damage, paint, repair; fixed or months-of-rent). Every charge is its own debit note and settlement line, and all are company income, MANAGED units included (confirmed 2026-09-27).
+  6. `TERMINATION_SETTLED`: the held deposit is applied, every open tenant balance of the lease is closed (status `CLOSED`), and the net becomes either `TENANT_REFUND_PAYABLE` or one `TERMINATION_BALANCE` item due from the tenant, collected through the normal collection flow by any method, **cheque included** (a cheque attempt on the balance item, with the usual 2-return rule).
   7. The lease becomes TERMINATED and the unit AVAILABLE.
 - **Settlement:** net = deposit held + rent collected − rent earned (incl. VAT) − other unpaid dues (e.g. commission) − penalty − charges.
+  - The preview and the stored breakdown list it line by line, signed from the tenant's side: rent invoiced, unearned rent credited, rent paid, other unpaid dues, penalty (calculated − waived + VAT), each charge, deposit held. The lines add up to the final balance, and the result says in whose favour it is.
+  - Items that were closed or netted can't be paid again.
+- **Drill-down:** owner → unit (owner statement) → lease → installment (`/api/lease/installments` shows each item's termination role: balance due, penalty, charge, credited, closed, cancelled; plus its invoice and credit notes) → transaction (journals by source `INVOICE`, `CREDIT_NOTE`, `TERMINATION`, `CHEQUE` or `COLLECTION`).
 - **Refund payment** (`RFD-{pmc}-{n}`): a DRAFT for the full refund, approved and posted by a different user (Dr `TENANT_REFUND_PAYABLE` / Cr the bank account).
 - **Not refunded:** leasing commission (company income at lease start).
