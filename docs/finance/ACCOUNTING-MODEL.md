@@ -123,7 +123,7 @@ Every journal carries dimensions: unit, lease, tenant and installment where appl
 | R16 | **Owner payout** (monthly, quarterly or half-yearly) | payout date | `OWNER_PAYABLE` | `BANK` |
 | R17 | **Vendor payment** | payment date | `AP_VENDOR` | `BANK` |
 | R18 | **Deposit carried to renewal lease** | renewal activation | `SECURITY_DEPOSIT_HELD` (old lease dims) | `SECURITY_DEPOSIT_HELD` (new lease dims) |
-| R19 | **Termination / refund** | Phase 10; B4 still open | | |
+| R19 | **Termination / refund** (see §10) | termination date / refund date | credit note: `DEFERRED_RENTAL_INCOME` + `VAT_OUTPUT`; settlement: `SECURITY_DEPOSIT_HELD`, `AR_TENANT` (credit balances, balance due); refund paid: `TENANT_REFUND_PAYABLE` | credit note: `AR_TENANT`; settlement: `AR_TENANT` (open balances), `TENANT_REFUND_PAYABLE`; refund paid: bank |
 
 The monthly close order per MANAGED unit is: recognition (R4), then the month's expenses (R12), then fee (R14), then allocation (R15). After that, `RENTAL_INCOME_CLEARING` is zero for the unit.
 
@@ -198,3 +198,26 @@ Consequences for §5: R3/R4 credit the **net** month amount (no discount line). 
 - **Payout (R16)** per owner: DRAFT, approved by a different user, limited to the owner's payable balance. Dr `OWNER_PAYABLE` (owner dimension) / Cr the chosen bank account.
 - **Payouts due**: per owner, the payable balance for completed settlement periods (monthly, quarterly or half-yearly, counted from the PMC's fiscal-year start month) less payouts made.
 - **Owner statement**: owner → unit → month (settlement figures, owner %, owner amount) → lease → installment → journals, plus expenses, charges and the payable movements with running balance. Owners see only their own statement.
+
+## 10. Termination as implemented (Phase 10)
+
+Confirmed 2026-09-27: the termination date is the tenant's last day and is included; the termination month's rent is **prorated by days** (15 Oct → 15/31); **every undeposited PDC is returned** to the tenant and anything earned but unpaid is netted; the penalty is **company income** on MANAGED units too; paying a refund is **maker-checker**.
+
+- **Preview → confirm.** The preview shows the settlement; confirmation recalculates it and refuses if the net changed.
+- **Refused when:**
+  - the lease is not ACTIVE, or has a renewal in progress
+  - the date is not before the lease end date (such a lease expires normally)
+  - the date is after today (no future-dated journals), or before the current month (those months are already recognized and may be settled to owners)
+  - a cheque is still in clearing
+  - the lease has failed accounting postings
+- **On confirm:**
+  1. Invoices dated on or before the termination date are issued. Later installments and their scheduled invoices are cancelled.
+  2. Every undeposited PDC becomes `RETURNED_TO_TENANT`. An uncollected deposit is cancelled.
+  3. Rent is recognized up to the termination date. The last month is prorated and dated on the termination date; nothing is recognized after it.
+  4. A credit note (`CN-{pmc}-{n}`, R19) reverses each invoiced installment's unearned net and its VAT, in proportion.
+  5. Debit notes are issued for the penalty (Charges master `TERMINATION_PENALTY`, `MONTHS_OF_RENT`, 2 × `Lease.rent`, VAT per the charge, after any audited waiver) and for chosen charges (Administrative/Other; fixed or months-of-rent).
+  6. `TERMINATION_SETTLED`: the held deposit is applied, every open tenant balance of the lease is closed (status `CLOSED`), and the net becomes either `TENANT_REFUND_PAYABLE` or one `TERMINATION_BALANCE` item due from the tenant, collected through the normal collection flow.
+  7. The lease becomes TERMINATED and the unit AVAILABLE.
+- **Settlement:** net = deposit held + rent collected − rent earned (incl. VAT) − other unpaid dues (e.g. commission) − penalty − charges.
+- **Refund payment** (`RFD-{pmc}-{n}`): a DRAFT for the full refund, approved and posted by a different user (Dr `TENANT_REFUND_PAYABLE` / Cr the bank account).
+- **Not refunded:** leasing commission (company income at lease start).
