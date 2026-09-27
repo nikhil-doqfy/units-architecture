@@ -270,3 +270,14 @@ Finance rights use the existing Roles & Permissions screen and its View / Create
 
 - **Unit tests:** `units-finance` (`manage.py test ledger`) and `units-backend` (the `billing`, `lease`, `property` finance tests) cover every posting rule, workflow, report and permission.
 - **End-to-end:** `important_scripts/finance_e2e/run_e2e.sh` runs the 20 required flows across both services on a throwaway database with real event delivery, and reports PASS/FAIL per flow. Result on 2026-09-27: **20/20**. Tests 6–8 follow the approved 2-return cheque rule.
+
+
+## 14. Manual installment schedule (2026-09-27)
+
+When the lease's months don't divide evenly into the installment count (e.g. 13 months, 12 installments), the user enters the installments: the count, and each installment's period, cheque date and amount (before discount).
+- The form suggests an even split, which the user can change.
+- Periods must follow each other with no gaps or overlaps, from the lease start to its end.
+- Amounts must add up to the contract amount.
+- The lease discount is split across the installments in proportion to their amounts; the last absorbs rounding.
+- Each installment is still invoiced on its cheque date (B2) and earned in equal monthly amounts over its own period (D4).
+- An evenly dividing lease is still split automatically.
