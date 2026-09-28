@@ -142,9 +142,11 @@ Clearing ends the month at 0, and Deferred holds the unearned balance of any mul
 
 ## 6. Cheque lifecycle (unchanged, confirmed)
 
-Collected (register only, no GL) → deposited (R5/R6, expected clearing date = deposit date + the bank account's clearing days; a post-dated cheque can only be deposited on or after its cheque date) → cleared (R7), or returned (R8, plus the optional R9). Maximum **2 returns per installment**, deposit included:
-- After return #1, a replacement cheque is required (recorded by the accountant).
-- After return #2, no further cheque is accepted on any creation path. Only a non-cheque method is allowed (R10).
+Collected (register only, no GL) → deposited (R5/R6, expected clearing date = deposit date + the bank account's clearing days; a post-dated cheque can only be deposited on or after its cheque date) → cleared (R7), or returned (R8, plus the optional R9). Maximum **2 returns per cheque**, counted over the cheque and its replacements (`FinanceSettings.max_cheque_returns`):
+- After return #1, a replacement cheque is required (recorded by the accountant). It covers the same items.
+- After return #2, no further cheque is accepted on any creation path for those items. Only a non-cheque method is allowed (R10).
+
+See §15 for how one cheque pays several items.
 
 ## 7. ARESTA validation (reference only; nothing copied)
 
@@ -281,3 +283,20 @@ When the lease's months don't divide evenly into the installment count (e.g. 13 
 - The lease discount is split across the installments in proportion to their amounts; the last absorbs rounding.
 - Each installment is still invoiced on its cheque date (B2) and earned in equal monthly amounts over its own period (D4).
 - An evenly dividing lease is still split automatically.
+
+## 15. Cheque allocations (2026-09-28)
+
+A cheque pays one or more items through `ChequeAllocation` rows (cheque ↔ installment, gross amount). An item may be paid by several cheques. An existing lease is the simplest case: one allocation per cheque, created by the migration.
+
+- **Schedule.** The tenant pays equal cheques for the grand total: rent + agreement charges (commission, admin, Ejari, booking amount…) + security deposit, VAT included. The cheques are dated on the rent due dates, and the last absorbs rounding. Each cheque pays, in order, the commission, then the charges, then the deposit, then rent 1, rent 2… What a cheque can't cover moves to the next cheque.
+- **Dates.** An item's invoice and due date is the date of the first cheque paying it (B2). While nothing is deposited or issued, a changed commission or an added charge rebalances the same cheques in place.
+- **Manual cheques.** A cheque entered by hand pays, in the same order, whatever the other cheques don't cover yet. Any rest of its amount stays unallocated and is shown.
+- **Lifecycle.** Deposit, clear and return act on the whole cheque.
+  - Each event carries one line per allocation. R5/R6 credit, and R8 debits, each allocation's own account: the deposit part to Security Deposit Held, the rest to tenant AR, each with its installment's dimensions.
+  - Clearing records one collection and one receipt per allocation, and adds to each item's `paid_amount`. An item is settled once fully paid.
+  - A return leaves every item it paid unpaid again. The allocations stay on the returned cheque.
+  - The replacement (`replaces`) covers what is still outstanding of the same items.
+- **Collections.** A non-cheque collection takes what is outstanding and not covered by a cheque in hand or in clearing.
+- **Invoices.** An invoice with part of it paid shows as *Partly paid*, with its paid amount and balance.
+- **Termination.** Termination nets what was paid of each item (a part-paid rent included) and the part of the deposit that was paid.
+
