@@ -3,3 +3,4 @@ psycopg2-binary
 gunicorn
 djangorestframework
 PyJWT
+openpyxl==3.1.5
