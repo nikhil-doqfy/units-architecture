@@ -184,6 +184,31 @@ def verify():
     statement = oa.owner_balance(p, ctx["owner_b"])
     result(15, "owner B still owed 9,465.00 (quarterly owner, not yet paid)", statement == D("9465.00"), statement)
 
+    # ── Test 22: prepaid schedule (AMC paid upfront, recognised monthly) ──
+    from ledger import prepaid as pp
+    from ledger.models import PrepaidSchedule
+
+    amc = ExpenseMaster.objects.create(finance_pmc_profile=p, code="AMC", name="AMC", vat_applicable=True, vat_rate=D("5"),
+                                       expense_account=R.objects.get(finance_pmc_profile=p, role=R.EXPENSE, property_id=None).account)
+    schedule = pp.create_draft(p, vendor=vendor, description="Annual AMC", expense_type=amc, amount=D("12000"),
+                               start_date=datetime.date(2026, 6, 1), end_date=datetime.date(2027, 5, 31),
+                               frequency=PrepaidSchedule.MONTHLY, payment_mode=PrepaidSchedule.PAID,
+                               payment_date=datetime.date(2026, 6, 1), paid_from_account=bank, created_by_user_id=MAKER)
+    result(22, "12 monthly lines of 1,000 adding up to the prepaid amount",
+           list(schedule.lines.values_list("amount", flat=True)) == [D("1000.00")] * 12)
+    schedule = pp.activate(schedule, user_id=MAKER, today=TODAY)
+    booking = schedule.journal_entry
+    result(22, "booked: Dr prepaid 12,000 + input VAT 600 / Cr bank 12,600, no expense yet",
+           {(l.account.role_mappings.first().role, l.debit, l.credit) for l in booking.lines.select_related("account")}
+           == {(R.PREPAID_EXPENSE, D("12000.00"), D("0")), (R.VAT_INPUT, D("600.00"), D("0")), (R.BANK, D("0"), D("12600.00"))})
+    first = pp.post_due(TODAY, profile=p)
+    again = pp.post_due(TODAY, profile=p)
+    result(22, "daily job posts Jun-Aug (due by 27 Sep) once", (first["counts"]["posted"], again["counts"]["posted"]) == (3, 0),
+           (first["counts"], again["counts"]))
+    report = pp.report(p, TODAY)["totals"]
+    result(22, "remaining 9,000 reconciles with the prepaid ledger account",
+           (report["remaining"], report["ledger_balance"], report["reconciled"]) == (D("9000.00"), D("9000.00"), True), report)
+
     # ── Test 17: posted journals are immutable ──
     entry = inv_a
     blocked = []

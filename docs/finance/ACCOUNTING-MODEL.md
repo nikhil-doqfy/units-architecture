@@ -300,3 +300,29 @@ A cheque pays one or more items through `ChequeAllocation` rows (cheque ↔ inst
 - **Invoices.** An invoice with part of it paid shows as *Partly paid*, with its paid amount and balance.
 - **Termination.** Termination nets what was paid of each item (a part-paid rent included) and the part of the deposit that was paid.
 
+## 16. Prepaid schedules (approved 2026-09-28)
+
+An expense paid or billed upfront for a service period is held as a prepaid asset and recognised as expense over the period. Examples: an AMC, insurance, a subscription, a licence, a service contract. It uses one generic engine (`ledger/prepaid.py`) and posts only through `JournalBuilder`.
+
+- **Booking (activation).** Booked on the bill / payment date: Dr prepaid account (net) + Dr `VAT_INPUT` / Cr bank or cash (paid) or Cr vendor payables (owed). The VAT uses the expense type's VAT settings. Input VAT is booked for prepaid schedules only; unit expenses stay gross. The prepaid account defaults to the `PREPAID_EXPENSE` role (1300 Prepaid Expenses) and can be set per schedule.
+- **Vendor payment.** For an owed schedule: Dr vendor payables / Cr bank. The payment never changes the recognition schedule.
+- **Schedule.**
+  - Periods step from the start date by the frequency: monthly, quarterly, half-yearly or yearly. Adding a frequency means adding its months to `PrepaidSchedule.FREQUENCY_MONTHS`.
+  - Each period is recognised on its last day.
+  - Full periods get equal amounts; a shorter final period gets a day-proportional share. The last line absorbs the rounding, so the lines always add up to the prepaid amount.
+- **Recognition.** Each line posts Dr expense account / Cr prepaid.
+  - It carries the schedule, line, period and vendor in the journal: source `PREPAID_RECOGNITION` / line id, memo and `vendor_id` dimension.
+  - A daily idempotent job posts the lines due by the business date: units-backend Celery calls `/internal/prepaid/post-due` hourly. Authorised users can also "post now" a due line.
+  - A line whose date falls in a closed period stays scheduled, with the reason, and posts once the period is reopened.
+- **Company expense.** A property / unit on a schedule is a reporting tag only; nothing is charged to owners.
+- **Cancellation.**
+  - The user gives a reason and chooses a refund (Dr bank, or Dr vendor payables as a credit against the payable / Cr prepaid) or a write-off (Dr expense / Cr prepaid) of what is left.
+  - Unposted lines become Skipped; posted lines and their journals stay.
+  - Any input VAT adjustment comes with the vendor's credit note.
+- **Corrections.** Posted journals are never edited. Reversing a recognition journal (the standard reversal) marks its line Reversed and adds a scheduled line for the same period.
+- **Statuses.**
+  - Schedule: Draft (editable), Active, Completed (only when nothing is left), Cancelled.
+  - Line: Scheduled, Posted, Skipped, Reversed.
+- **Report.** Booked, recognised, cleared and remaining by vendor, expense account, schedule and month. It is reconciled with the ledger balance of the prepaid accounts.
+- **Rights.** The "Prepaid Expenses" permission module (View / Create / Edit / Delete).
+

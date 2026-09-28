@@ -419,6 +419,14 @@ def trace():
     result(19, f"after the period is reopened, the {len(retried)} failed postings are retried and post",
            retried and all(e.status == FinanceEvent.POSTED for e in retried), [(e.id, e.status) for e in retried])
 
+    # Test 22: the hourly prepaid job over HTTP -- September's line posts once
+    from billing.prepaid_job import post_due_prepaid
+
+    first = post_due_prepaid(today=date(2026, 9, 30)) or {}
+    second = post_due_prepaid(today=date(2026, 9, 30)) or {}
+    result(22, "backend job posts the line due on 30 Sep, and nothing more when run again",
+           (first.get("counts", {}).get("posted"), second.get("counts", {}).get("posted")) == (1, 0), (first, second))
+
     # Test 20: Unit -> Lease -> Installment -> Invoice -> PDC -> Payment -> Journal -> Ledger
     unit_id = ctx["unit_a"]
     lease = Lease.objects.get(unit_id=unit_id, pk=ctx["lease_a"])

@@ -65,7 +65,7 @@ names = {1: "New lease", 2: "Contract renewal", 3: "Cheque collection", 4: "Cheq
          6: "First cheque return", 7: "Second cheque return", 8: "No third cheque", 9: "Payment channel charge",
          10: "Discount", 11: "Residential VAT", 12: "Commercial VAT", 13: "Expense", 14: "Multiple owners",
          15: "Owner payout", 16: "Termination", 17: "Posted journal", 18: "Journal correction", 19: "Closed period",
-         20: "Unit traceability", 21: "Split cheques (allocations)"}
+         20: "Unit traceability", 21: "Split cheques (allocations)", 22: "Prepaid schedule"}
 rows = [json.loads(line.split(" ", 1)[1]) for line in open(sys.argv[1])]
 failed = 0
 for test in sorted(names):
