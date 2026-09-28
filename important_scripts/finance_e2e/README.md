@@ -1,6 +1,6 @@
 # Finance end-to-end tests
 
-The 20 required flows from the integration brief (§56), run through the real units-backend and units-finance code with real HTTP delivery of accounting events.
+The 20 required flows from the integration brief (§56), plus split cheques (test 21), run through the real units-backend and units-finance code with real HTTP delivery of accounting events.
 
 ```bash
 ./important_scripts/finance_e2e/run_e2e.sh
@@ -12,7 +12,10 @@ What it does:
    - A: commercial, managed, two owners 60/40
    - B: residential, internal
    - C: residential, renewed
-   - a renewal of C
+   - a renewal of C, on equal cheques
+   - D: commercial, internal, on equal cheques
+
+   Leases A–C use one cheque per item, which is how the migration converts existing leases (one allocation each). D runs split cheques: cheque 1 pays the commission, the deposit and part of rent 1. A returned cheque is replaced by one covering the same items. The ledger must show one line per allocation.
 
    It then runs the operational flows: schedule, invoices, cheques deposited/cleared/returned, collections, termination (one balance due, one refund), and renewal.
 3. **finance: activate.** Activates Finance for that company and closes January 2026.

@@ -1,6 +1,6 @@
 """Finance E2E -- units-backend side (run inside the units_backend container, scratch DB).
 
-    STAGE=build    create the scenario data and run the operational flows (tests 1-12, 16);
+    STAGE=build    create the scenario data and run the operational flows (tests 1-12, 16, 21);
                    prints E2E_CONTEXT {...} for the later stages
     STAGE=deliver  deliver every accounting event to units-finance over HTTP (test 19: the
                    event dated inside the closed period must FAIL)
@@ -22,14 +22,17 @@ import billing.finance_events as fe
 
 fe._queue_delivery = lambda event_id: None  # delivered explicitly in STAGE=deliver
 
-from billing.cheques import ChequeActionError, add_replacement_cheque, clear_cheque, deposit_cheque, return_cheque  # noqa: E402
+from billing.allocations import payable_items, sync_invoice_dates  # noqa: E402
+from billing.cheques import (  # noqa: E402
+    ChequeActionError, add_replacement_cheque, clear_cheque, deposit_cheque, replace_cheque, return_cheque,
+)
 from billing.collections import CollectionError, quote, settle  # noqa: E402
 from billing.finance_jobs import issue_due_invoices, raise_debit_note, recognize_revenue  # noqa: E402
 from billing.models import Collection, FinanceEvent, Invoice, PDCReturnReason, Receipt  # noqa: E402
 from billing.schedule import generate_lease_schedule  # noqa: E402
 from charges.models import Charge  # noqa: E402
 from lease.lifecycle import create_renewal, on_lease_activated  # noqa: E402
-from lease.models import ChequeNotAllowedError, Lease, LeaseInstallment, LeaseTransaction  # noqa: E402
+from lease.models import ChequeAllocation, ChequeNotAllowedError, Lease, LeaseInstallment, LeaseTransaction  # noqa: E402
 from lease.termination import approve_refund, confirm, create_refund, preview  # noqa: E402
 from lease.tests.factories import (  # noqa: E402
     LeaseFactory, OwnerFactory, TenantFactory, UnitFactory, build_standard_stack,
@@ -58,8 +61,37 @@ def of_type(lease, installment_type):
     return lease.installments.get(installment_type=installment_type)
 
 
+def cheque_of(installment):
+    """The latest cheque paying the installment."""
+    return LeaseTransaction.objects.filter(allocations__installment=installment).order_by("-attempt_no", "-id").first()
+
+
+def payment_cheques(lease):
+    return list(lease.lease_cheques.filter(is_payment=True, allocations__isnull=False).distinct().order_by("cheque_date", "id"))
+
+
+def one_cheque_per_item(lease, user):
+    """An existing lease as the migration converts it: one PDC per item for its full amount
+    (a single allocation each), dated on its due date. The commission is paid another way."""
+    template = payment_cheques(lease)[0]
+    for cheque in payment_cheques(lease):
+        cheque.delete()
+    for item in payable_items(lease):
+        if item.installment_type == c.INSTALLMENT_TYPE_COMMISSION:
+            continue
+        cheque = LeaseTransaction.objects.create(
+            lease=lease, attempt_no=1, document_type=template.document_type, file_name="", file_path="",
+            cheque_type=c.RENT_CHEQUE, payment_type=c.PAYMENT_TYPE_PDC, status=c.CHEQUE_STATUS_BALANCE, amount=0,
+            cheque_date=aware(item.due_date.year, item.due_date.month, item.due_date.day), created_by=user,
+        )
+        ChequeAllocation.objects.create(cheque=cheque, installment=item, amount=item.total_amount)
+        cheque.installment, cheque.total = item, item.total_amount
+        cheque.save()
+    sync_invoice_dates(lease)
+
+
 def bank_it(installment, on, account, user):
-    cheque = installment.cheques.order_by("-attempt_no").first()
+    cheque = cheque_of(installment)
     deposit_cheque(cheque.id, deposit_account=account, deposit_date=on, user=user)
     clear_cheque(cheque.id, clearing_date=on, user=user)
     return cheque
@@ -123,6 +155,7 @@ def build():
                            discount=D("12000"), payment_count=12, rent=D("10000"), security_deposit=D("5000"),
                            commission=D("1000"))
     generate_lease_schedule(lease_a, admin)
+    one_cheque_per_item(lease_a, admin)
     # ── Test 11 / 6-8: residential INTERNAL unit B, 5,000 rent, no VAT ──
     unit_b = unit("B", c.RESIDENTIAL, c.UNIT_MANAGEMENT_INTERNAL)
     lease_b = LeaseFactory(unit=unit_b, tenant=TenantFactory(created_by=pm_user), created_by=admin,
@@ -130,6 +163,7 @@ def build():
                            contract_amount=D("60000"), discount=D("0"), payment_count=12, rent=D("5000"),
                            security_deposit=D("5000"), commission=D("0"))
     generate_lease_schedule(lease_b, admin)
+    one_cheque_per_item(lease_b, admin)
     # ── Test 2: residential INTERNAL unit C, lease ending 30 Sep 2026, renewed ──
     unit_c = unit("C", c.RESIDENTIAL, c.UNIT_MANAGEMENT_INTERNAL)
     lease_c = LeaseFactory(unit=unit_c, tenant=TenantFactory(created_by=pm_user), created_by=admin,
@@ -137,6 +171,15 @@ def build():
                            contract_amount=D("48000"), discount=D("0"), payment_count=12, rent=D("4000"),
                            security_deposit=D("3000"), commission=D("500"))
     generate_lease_schedule(lease_c, admin)
+    one_cheque_per_item(lease_c, admin)
+    # ── Test 21: commercial INTERNAL unit D on equal cheques: 119,450 (12 x 9,450 rent, 5,000
+    #    deposit, 1,050 commission) in 12 cheques of 9,954.17, each paying charges, deposit, rent in order ──
+    unit_d = unit("D", c.COMMERCIAL, c.UNIT_MANAGEMENT_INTERNAL)
+    lease_d = LeaseFactory(unit=unit_d, tenant=TenantFactory(created_by=pm_user), created_by=admin,
+                           lease_status=c.ACTIVE, start_date=aware(2026, 6, 1), end_date=aware(2027, 5, 31),
+                           contract_amount=D("120000"), discount=D("12000"), payment_count=12, rent=D("10000"),
+                           security_deposit=D("5000"), commission=D("1000"))
+    generate_lease_schedule(lease_d, admin)
 
     issue_due_invoices(today=date(2026, 9, 27))
 
@@ -148,13 +191,15 @@ def build():
     result(1, "one invoice per rent installment, issued up to today, scheduled after",
            Invoice.objects.filter(installment__in=rents, status=Invoice.ISSUED).count() == 4
            and Invoice.objects.filter(installment__in=rents, status=Invoice.SCHEDULED).count() == 8)
-    result(1, "one PDC (attempt 1) per installment", all(i.cheques.filter(attempt_no=1).count() == 1 for i in rents))
+    result(1, "one PDC (attempt 1) per installment, one allocation each",
+           all(LeaseTransaction.objects.filter(allocations__installment=i, attempt_no=1).count() == 1 for i in rents)
+           and all(ch.allocations.count() == 1 for ch in payment_cheques(lease_a)))
 
     # ── Test 10 / 12: discount and commercial VAT on the installment and invoice ──
     first = rent(lease_a, 1)
     result(10, "installment 10,000 - 1,000 discount = 9,000 net",
            (first.original_amount, first.discount_amount, first.net_amount) == (D("10000.00"), D("1000.00"), D("9000.00")))
-    result(10, "PDC for the net amount + VAT", first.cheques.get().total == D("9450.00"), first.cheques.get().total)
+    result(10, "PDC for the net amount + VAT", cheque_of(first).total == D("9450.00"), cheque_of(first).total)
     result(12, "commercial rent: VAT 5% = 450 on the invoice",
            (first.invoice.vat_rate, first.invoice.vat_amount, first.invoice.total) == (D("5.000"), D("450.00"), D("9450.00")))
     first_b = rent(lease_b, 1)
@@ -162,14 +207,14 @@ def build():
            == (D("0.00"), D("0.00"), D("5000.00")))
 
     # ── Test 3: a collected PDC is in the register only ──
-    oct_cheque = rent(lease_a, 5).cheques.get()
+    oct_cheque = cheque_of(rent(lease_a, 5))
     result(3, "PDC created, linked to its installment, in hand",
            oct_cheque.installment_id == rent(lease_a, 5).id and oct_cheque.status == c.CHEQUE_STATUS_BALANCE)
     result(3, "no accounting event for a PDC in hand",
            not FinanceEvent.objects.filter(source_type="CHEQUE", source_id=oct_cheque.id).exists())
 
     # ── Tests 4 / 5: deposit then clear (deposit, Jun-Aug for A and B; deposit for C) ──
-    jun = rent(lease_a, 1).cheques.get()
+    jun = cheque_of(rent(lease_a, 1))
     deposit_cheque(jun.id, deposit_account=account, deposit_date=date(2026, 6, 1), user=admin)
     jun.refresh_from_db()
     result(4, "deposited: status DEPOSITED, expected clearing = deposit + 3 days",
@@ -189,7 +234,7 @@ def build():
 
     # ── Tests 6-8: cheque returns on lease B's September rent (limit: 2 returns) ──
     sep_b = rent(lease_b, 4)
-    first_cheque = sep_b.cheques.get()
+    first_cheque = cheque_of(sep_b)
     deposit_cheque(first_cheque.id, deposit_account=account, deposit_date=date(2026, 9, 1), user=admin)
     _, charge_note_1 = return_cheque(first_cheque.id, reason=reason, return_date=date(2026, 9, 3), user=admin)
     sep_b.refresh_from_db()
@@ -276,11 +321,51 @@ def build():
     result(2, "new installments and PDCs for the new period (no new deposit)",
            renewal.installments.filter(installment_type=c.INSTALLMENT_TYPE_RENT).count() == 12
            and not renewal.installments.filter(installment_type=c.INSTALLMENT_TYPE_DEPOSIT).exists()
-           and all(i.cheques.count() == 1 for i in renewal.installments.filter(installment_type=c.INSTALLMENT_TYPE_RENT)))
+           and len(payment_cheques(renewal)) == 12
+           and sum(ch.total for ch in payment_cheques(renewal)) == sum(i.total_amount for i in payable_items(renewal)))
     renewal_commission = of_type(renewal, c.INSTALLMENT_TYPE_COMMISSION)
     result(2, "initial commission charged again (500 + VAT)", renewal_commission.total_amount == D("525.00"),
            renewal_commission.total_amount)
     result(2, "deposit transfer event raised", FinanceEvent.objects.filter(event_type="DEPOSIT_TRANSFERRED").exists())
+
+    # ── Test 21: split cheques -- one cheque pays several items, one item is paid by several cheques ──
+    d_cheques = payment_cheques(lease_d)
+    d_rent1, d_rent2 = rent(lease_d, 1), rent(lease_d, 2)
+    d_deposit, d_commission = of_type(lease_d, c.INSTALLMENT_TYPE_DEPOSIT), of_type(lease_d, c.INSTALLMENT_TYPE_COMMISSION)
+    split = lambda ch: [(a.installment.installment_type, a.amount) for a in ch.allocations.select_related("installment").order_by("sequence")]
+    result(21, "12 equal cheques for the grand total 119,450 (rent + commission + deposit + VAT)",
+           len(d_cheques) == 12 and [ch.total for ch in d_cheques] == [D("9954.17")] * 11 + [D("9954.13")],
+           [ch.total for ch in d_cheques])
+    result(21, "cheque 1 pays the commission, the deposit, then part of rent 1",
+           split(d_cheques[0]) == [("COMMISSION", D("1050.00")), ("DEPOSIT", D("5000.00")), ("RENT", D("3904.17"))],
+           split(d_cheques[0]))
+    deposit_cheque(d_cheques[0].id, deposit_account=account, deposit_date=date(2026, 6, 1), user=admin)
+    clear_cheque(d_cheques[0].id, clearing_date=date(2026, 6, 3), user=admin)
+    d_rent1.refresh_from_db(); d_deposit.refresh_from_db(); d_commission.refresh_from_db()
+    result(21, "cleared cheque 1: commission and deposit settled, rent 1 part paid",
+           (d_commission.status, d_deposit.status, d_rent1.paid_amount, d_rent1.status)
+           == (c.INSTALLMENT_STATUS_SETTLED, c.INSTALLMENT_STATUS_SETTLED, D("3904.17"), c.INSTALLMENT_STATUS_INVOICED))
+    result(21, "one collection and receipt per item the cheque paid",
+           Receipt.objects.filter(collection__cheque=d_cheques[0]).count() == 3)
+    deposit_cheque(d_cheques[1].id, deposit_account=account, deposit_date=date(2026, 7, 1), user=admin)
+    returned, _ = return_cheque(d_cheques[1].id, reason=reason, return_date=date(2026, 7, 3), user=admin)
+    d_rent1.refresh_from_db()
+    result(21, "returned cheque 2: what it paid (rest of rent 1, part of rent 2) is unpaid again, allocations kept",
+           returned.return_count == 1 and d_rent1.paid_amount == D("3904.17") and returned.allocations.count() == 2)
+    d_replacement = replace_cheque(returned.id, user=admin, cheque_number="D-R1", cheque_date=aware(2026, 7, 5))
+    result(21, "replacement covers the same items for the same amount, in the chain",
+           (d_replacement.replaces_id, d_replacement.total, split(d_replacement))
+           == (returned.id, D("9954.17"), split(returned)), split(d_replacement))
+    deposit_cheque(d_replacement.id, deposit_account=account, deposit_date=date(2026, 7, 5), user=admin)
+    clear_cheque(d_replacement.id, clearing_date=date(2026, 7, 8), user=admin)
+    d_rent1.refresh_from_db(); d_rent2.refresh_from_db()
+    result(21, "replacement cleared: rent 1 paid by two cheques, rent 2 part paid",
+           (d_rent1.status, d_rent1.paid_amount, d_rent2.paid_amount)
+           == (c.INSTALLMENT_STATUS_SETTLED, D("9450.00"), D("4408.34")), (d_rent1.paid_amount, d_rent2.paid_amount))
+    deposited = FinanceEvent.objects.get(event_type="CHEQUE_DEPOSITED", source_id=d_cheques[0].id)
+    result(21, "deposit event carries one line per allocation",
+           [(a["installment_type"], a["amount"]) for a in deposited.payload["allocations"]]
+           == [("COMMISSION", "1050.00"), ("DEPOSIT", "5000.00"), ("RENT", "3904.17")])
 
     # ── Test 19 (backend part): a document dated inside a period finance will close (Jan 2026) ──
     jan_invoice = raise_debit_note(lease_c, late_fee, D("100"), date(2026, 1, 15), admin)
@@ -296,6 +381,9 @@ def build():
         "sep_installment_b": sep_b.id, "commission_a": commission.id, "first_invoice_a": first.invoice.id,
         "first_invoice_b": first_b.invoice.id, "termination_a": term_a.id, "termination_b": term_b.id,
         "refund_b": refund.id, "jan_event": jan_event.id, "renewal_commission_invoice": renewal_commission.invoice.id,
+        "lease_d": lease_d.id, "d_cheque_1": d_cheques[0].id, "d_cheque_2": d_cheques[1].id,
+        "d_replacement": d_replacement.id, "d_rent1": d_rent1.id, "d_deposit": d_deposit.id,
+        "d_commission": d_commission.id,
     }
     print("E2E_CONTEXT " + json.dumps(context))
 

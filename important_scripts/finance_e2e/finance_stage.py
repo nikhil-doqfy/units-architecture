@@ -1,7 +1,7 @@
 """Finance E2E -- units-finance side (run inside the units_finance container, scratch DB).
 
     STAGE=activate  activate Finance for the scenario PMC and close January 2026 (test 19)
-    STAGE=verify    check the ledger for every flow (tests 1-16), run owner accounting
+    STAGE=verify    check the ledger for every flow (tests 1-16, 21), run owner accounting
                     (tests 13-15), journal controls (17-19), then reopen January so the
                     backend can retry its failed posting
 
@@ -122,6 +122,28 @@ def verify():
     result(16, "A: no unearned rent left", bal(R.DEFERRED_RENTAL_INCOME, lease_id=A) == 0, bal(R.DEFERRED_RENTAL_INCOME, lease_id=A))
     result(16, "B: refund payable raised and paid",
            journals(JournalEntry.REFUND, ctx["refund_b"]).exists() and bal(R.TENANT_REFUND_PAYABLE, lease_id=B) == 0)
+
+    # ── Test 21: split cheques post each allocation to its own account ──
+    Dl = ctx["lease_d"]
+    dep = journals(JournalEntry.CHEQUE, ctx["d_cheque_1"]).get(memo__startswith="Cheque deposited")
+    credits = sorted((l.account.role_mappings.first().role, l.installment_id, l.credit)
+                     for l in dep.lines.filter(credit__gt=0).select_related("account"))
+    result(21, "cheque 1 deposit: Cr AR commission 1,050, Cr deposit held 5,000, Cr AR rent 1 3,904.17",
+           credits == sorted([(R.AR_TENANT, ctx["d_commission"], D("1050.00")),
+                              (R.SECURITY_DEPOSIT_HELD, ctx["d_deposit"], D("5000.00")),
+                              (R.AR_TENANT, ctx["d_rent1"], D("3904.17"))])
+           and dep.lines.get(debit__gt=0).debit == D("9954.17"), credits)
+    result(21, "deposit held 5,000 for lease D; nothing left in cheques-in-bank",
+           (bal(R.SECURITY_DEPOSIT_HELD, lease_id=Dl), bal(R.CHEQUES_IN_BANK, lease_id=Dl)) == (D("-5000.00"), D("0")),
+           (bal(R.SECURITY_DEPOSIT_HELD, lease_id=Dl), bal(R.CHEQUES_IN_BANK, lease_id=Dl)))
+    result(21, "returned cheque 2 reversed per allocation (deposit + return journals)",
+           journals(JournalEntry.CHEQUE, ctx["d_cheque_2"]).count() == 2
+           and journals(JournalEntry.CHEQUE, ctx["d_cheque_2"]).get(memo__startswith="Cheque returned").lines.filter(debit__gt=0).count() == 2)
+    result(21, "rent 1 receivable closed by two cheques; commission receivable closed",
+           (bal(R.AR_TENANT, installment_id=ctx["d_rent1"]), bal(R.AR_TENANT, installment_id=ctx["d_commission"])) == (0, 0),
+           (bal(R.AR_TENANT, installment_id=ctx["d_rent1"]), bal(R.AR_TENANT, installment_id=ctx["d_commission"])))
+    result(21, "bank received cheque 1 and the replacement (2 x 9,954.17)",
+           bal(R.BANK, lease_id=Dl) == D("19908.34"), bal(R.BANK, lease_id=Dl))
 
     # ── Tests 13-15: expense, owner charge, multi-owner settlement, payout ──
     vendor = Vendor.objects.create(finance_pmc_profile=p, code="V1", name="AC Services")

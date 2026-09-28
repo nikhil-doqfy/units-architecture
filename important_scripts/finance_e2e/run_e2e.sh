@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Finance end-to-end tests (Phase 14): the 20 required flows across units-backend and units-finance.
+# Finance end-to-end tests (Phase 14): the 20 required flows, plus split cheques (21), across units-backend and units-finance.
 #
 # Runs against a throwaway database (units_db_e2e) that is created, migrated and dropped here,
 # with a temporary units-finance server on :8011 receiving the real accounting events over HTTP.
@@ -65,7 +65,7 @@ names = {1: "New lease", 2: "Contract renewal", 3: "Cheque collection", 4: "Cheq
          6: "First cheque return", 7: "Second cheque return", 8: "No third cheque", 9: "Payment channel charge",
          10: "Discount", 11: "Residential VAT", 12: "Commercial VAT", 13: "Expense", 14: "Multiple owners",
          15: "Owner payout", 16: "Termination", 17: "Posted journal", 18: "Journal correction", 19: "Closed period",
-         20: "Unit traceability"}
+         20: "Unit traceability", 21: "Split cheques (allocations)"}
 rows = [json.loads(line.split(" ", 1)[1]) for line in open(sys.argv[1])]
 failed = 0
 for test in sorted(names):
@@ -76,7 +76,7 @@ for test in sorted(names):
     for r in checks:
         if not r["ok"]:
             print(f"        ✗ {r['check']}: {r['detail']}")
-print(f"\n{20 - failed}/20 tests passed")
+print(f"\n{len(names) - failed}/{len(names)} tests passed")
 sys.exit(1 if failed else 0)
 PY
 status=$?
