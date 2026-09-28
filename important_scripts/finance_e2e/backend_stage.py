@@ -98,13 +98,13 @@ def build():
     Charge.objects.create(description="Early termination penalty", country=country,
                           charge_type=c.CHARGE_TYPE_TERMINATION_PENALTY, calc_type=c.CHARGE_CALC_MONTHS_OF_RENT,
                           months=D("2"), tax_code=D("5"), created_by=admin)
-    cleaning = Charge.objects.create(description="Cleaning", country=country, charge_type=c.CHARGE_TYPE_OTHER,
+    cleaning = Charge.objects.create(description="Cleaning", country=country, charge_type=c.CHARGE_TYPE_MISCELLANEOUS,
                                      calc_type=c.CHARGE_CALC_FIXED, amount=D("500"), tax_code=D("5"),
                                      is_editable=False, created_by=admin)
     admin_fee = Charge.objects.create(description="Owner admin fee", country=country,
-                                      charge_type=c.CHARGE_TYPE_ADMINISTRATIVE, calc_type=c.CHARGE_CALC_FIXED,
+                                      charge_type=c.CHARGE_TYPE_MISCELLANEOUS, calc_type=c.CHARGE_CALC_FIXED,
                                       amount=D("500"), tax_code=D("5"), pmc=company, created_by=admin)
-    late_fee = Charge.objects.create(description="Late document fee", country=country, charge_type=c.CHARGE_TYPE_OTHER,
+    late_fee = Charge.objects.create(description="Late document fee", country=country, charge_type=c.CHARGE_TYPE_MISCELLANEOUS,
                                      calc_type=c.CHARGE_CALC_FIXED, amount=D("100"), tax_code=D("0"), created_by=admin)
 
     def unit(name, usage, management, commission=None):
