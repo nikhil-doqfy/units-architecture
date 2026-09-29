@@ -102,9 +102,11 @@ def verify():
            and bal(R.VAT_OUTPUT, **com) == D("-51.05"), (bal(R.SETTLEMENT_PENDING, **com), bal(R.VAT_OUTPUT, **com)))
 
     # ── Test 2: renewal ──
-    result(2, "renewal commission invoiced 500 + 25 VAT to leasing commission income",
+    result(2, "renewal commission invoiced 500 + 25 VAT to renewal commission income",
            journals(JournalEntry.INVOICE, ctx["renewal_commission_invoice"]).exists()
-           and bal(R.LEASING_COMMISSION_INCOME, lease_id=ctx["renewal"]) == D("-500.00"))
+           and bal(R.RENEWAL_COMMISSION_INCOME, lease_id=ctx["renewal"]) == D("-500.00")
+           and bal(R.LEASING_COMMISSION_INCOME, lease_id=ctx["renewal"]) == D("0.00"),
+           (bal(R.RENEWAL_COMMISSION_INCOME, lease_id=ctx["renewal"]), bal(R.LEASING_COMMISSION_INCOME, lease_id=ctx["renewal"])))
     result(2, "held deposit moved from the old lease to the renewal",
            (bal(R.SECURITY_DEPOSIT_HELD, lease_id=ctx["lease_c"]), bal(R.SECURITY_DEPOSIT_HELD, lease_id=ctx["renewal"]))
            == (D("0.00"), D("-3000.00")))
