@@ -1,0 +1,143 @@
+R {"sec": 3, "check": "all 27 required accounts exist, active, postable and mapped to their posting role", "ok": true, "detail": "[]"}
+R {"sec": 3, "check": "no separate 'Termination Penalty' account: termination and contract-breaking penalties share 4330 Penalty Income", "ok": true, "detail": "Penalty Income"}
+R {"sec": 5, "check": "every issued invoice (50) has exactly one journal: Dr AR total / Cr deferred-or-income net / Cr VAT, dated the invoice date", "ok": true, "detail": "50"}
+R {"sec": 5, "check": "L1 rent 1: Dr Tenant Receivables 5,250 / Cr Deferred Rental Income 5,000 / Cr VAT Output 250", "ok": true, "detail": ""}
+R {"sec": 5, "check": "L2 rent 1 (residential): Dr AR 27,000 / Cr Deferred 27,000, no VAT line", "ok": true, "detail": ""}
+R {"sec": 7, "check": "L1 leasing commission: Dr AR 2,100 / Cr Leasing Commission Income 2,000 / Cr VAT 100", "ok": true, "detail": ""}
+R {"sec": 23, "check": "renewal commission: Dr AR 2,100 / Cr Renewal Commission Income 2,000 / Cr VAT 100", "ok": true, "detail": ""}
+R {"sec": 7, "check": "leasing commission income only from the 2 initial leases (2,000 + 6,000), never in rental income or owner revenue", "ok": true, "detail": "-8000.00"}
+R {"sec": 9, "check": "every deposited cheque (37): Dr Cheques in Bank face value / Cr AR or Security Deposit Held per allocation, on the deposit date", "ok": true, "detail": "[]"}
+R {"sec": 10, "check": "every cleared cheque: Dr Bank / Cr Cheques in Bank, face value, on the clearing date", "ok": true, "detail": "[]"}
+R {"sec": 11, "check": "every returned cheque: Dr AR / Security Deposit Held per allocation / Cr Cheques in Bank", "ok": true, "detail": "[]"}
+R {"sec": 9, "check": "L1 cheque 1 deposit: Dr Cheques in Bank 5,841.67 / Cr AR 2,100 (commission) / Cr Security Deposit Held 3,741.67", "ok": true, "detail": ""}
+R {"sec": 11, "check": "L5 multi-item cheque returned: Dr AR 1,000 + Dr Deposit Held 2,000 + Dr AR 7,000 / Cr Cheques in Bank 10,000", "ok": true, "detail": ""}
+R {"sec": 12, "check": "L5 rent 1 after return + replacement: one invoice journal, AR for the item closed (no duplicate receivable)", "ok": true, "detail": ""}
+R {"sec": 10, "check": "Cheques in Bank is zero: every deposited cheque was cleared or returned", "ok": true, "detail": "0.00"}
+R {"sec": 6, "check": "deposit never touches revenue: no income or deferred-rent line carries a deposit installment", "ok": true, "detail": ""}
+R {"sec": 6, "check": "every Security Deposit Held line is traceable to unit, lease and tenant", "ok": true, "detail": ""}
+R {"sec": 6, "check": "deposit held: L2 5,000 (active); L1 moved to renewal then applied at termination; L4 / L5 applied at termination", "ok": true, "detail": "[Decimal('-5000.00'), Decimal('0.00'), Decimal('0.00'), Decimal('0.00'), Decimal('0.00')]"}
+R {"sec": 23, "check": "deposit carried to the renewal: Dr Deposit Held 5,000 (old lease) / Cr Deposit Held 5,000 (renewal); no new deposit", "ok": true, "detail": ""}
+R {"sec": 13, "check": "L1 full period: 12 recognitions of 5,000 -> Rental Income 60,000; Deferred for L1 = 0", "ok": true, "detail": ""}
+R {"sec": 13, "check": "recognition dated each month end (30 Sep 2025 ... 31 Aug 2026)", "ok": true, "detail": "[datetime.date(2025, 9, 30), datetime.date(2025, 10, 31)]"}
+R {"sec": 14, "check": "L2 quarterly 27,000: recognised 9,000 / 9,000 / 9,000 = exactly 27,000 per quarter (Jan-Aug: 72,000) to Rental Income Clearing", "ok": true, "detail": "(8, Decimal('-9000.00'))"}
+R {"sec": 15, "check": "MANAGED discount borne by the owner: revenue recognised on net 9,000 (not gross 10,000); no discount line (4190 = 0)", "ok": true, "detail": ""}
+R {"sec": 15, "check": "INTERNAL discount: L4 recognised on net 5,400 per month (Mar-Aug) + 3,600 prorated Sep = 36,000", "ok": true, "detail": "-36000.00"}
+R {"sec": 13, "check": "no revenue recognised for a future month (latest recognition <= today)", "ok": true, "detail": ""}
+R {"sec": 21, "check": "cash: Dr Cash in Hand 210 / Cr AR 210", "ok": true, "detail": ""}
+R {"sec": 21, "check": "bank transfer: Dr Bank 5,000.02 / Cr AR 5,000.02", "ok": true, "detail": ""}
+R {"sec": 21, "check": "payment gateway: Dr Settlement Pending 1,243.81 / Cr AR 1,233.31, Channel Charges 10, VAT 0.50", "ok": true, "detail": ""}
+R {"sec": 21, "check": "card: Dr Settlement Pending 214.41 / Cr AR 210, Channel Charges 4.20, VAT 0.21", "ok": true, "detail": ""}
+R {"sec": 21, "check": "provider settlement (card batch): Dr Bank 209.05 + Dr Bank/Gateway Fees 5.36 / Cr Settlement Pending 214.41", "ok": true, "detail": ""}
+R {"sec": 21, "check": "provider settlement (gateway): Dr Bank 1,218.93 + Fees 24.88 / Cr Settlement Pending 1,243.81", "ok": true, "detail": ""}
+R {"sec": 21, "check": "bank charge: Dr Bank/Gateway Fees 50 / Cr Bank 50", "ok": true, "detail": ""}
+R {"sec": 21, "check": "Settlement Pending cleared to 0 after the provider settlements", "ok": true, "detail": "0.00"}
+R {"sec": 30, "check": "same provider batch (same reference) recorded twice: refused", "ok": false, "detail": "a second settlement 20 / journal JE0000400 was posted; Settlement Pending now -1243.81"}
+R {"sec": 29, "check": "duplicate corrected by a reversal journal (not an edit); Settlement Pending back to 0", "ok": true, "detail": "JE0000401"}
+R {"sec": 16, "check": "U2 Aug before expense/charge: revenue 9,000 -> net 9,000, fee 450 (5%), fee VAT 22.50, owners 8,527.50", "ok": true, "detail": "{'revenue': Decimal('9000.00'), 'net_distributable': Decimal('9000.00'), 'fee': Decimal('450.00'), 'fee_vat': Decimal('22.50'), 'owners_total': Decimal('8527.50')}"}
+R {"sec": 17, "check": "owner expense 1,000: Dr Rental Income Clearing / Cr Vendor Payables, with unit, property and vendor dimensions", "ok": true, "detail": ""}
+R {"sec": 17, "check": "net distributable decreases by exactly 1,000 (9,000 -> 8,000)", "ok": true, "detail": "8000.00"}
+R {"sec": 18, "check": "owner charge 500 + VAT 25: Dr Rental Income Clearing 525 / Cr Other Charges 500 / Cr VAT 25 -- no tenant AR, no rental income", "ok": true, "detail": ""}
+R {"sec": 18, "check": "Aug: 9,000 - 1,000 expenses - 500 charges = 7,500 net distributable; fee 375; VAT 18.75; owners 7,081.25 (charge VAT 25 borne by owner)", "ok": true, "detail": "{'net_distributable': Decimal('7500.00'), 'fee': Decimal('375.00'), 'fee_vat': Decimal('18.75'), 'charges_vat': Decimal('25.00'), 'owners_total': Decimal('7081.25')}"}
+R {"sec": 16, "check": "settlement maker cannot approve it", "ok": true, "detail": "WorkflowError: A settlement must be approved by someone other than the person who prepared it."}
+R {"sec": 19, "check": "U3 Jul: 100,000 - 10,000 - 5,000 = 85,000; fee 4,250.00; fee VAT 212.50; owners 80,287.50", "ok": true, "detail": ""}
+R {"sec": 19, "check": "U3 Jul journal: Dr Clearing 84,750 / Cr Mgmt Fee Income 4,250 / Cr Mgmt Fee VAT 212.50 / Cr Owner Payable 48,172.50 (60%) + 32,115 (40%)", "ok": true, "detail": ""}
+R {"sec": 30, "check": "an approved settlement cannot be approved again", "ok": true, "detail": "WorkflowError: Only a draft settlement can be approved."}
+R {"sec": 30, "check": "a settled month cannot be prepared again", "ok": true, "detail": "WorkflowError: July 2026 is already settled for this unit."}
+R {"sec": 16, "check": "an expense cannot be dated into a settled month", "ok": true, "detail": "OwnerAccountingError: July 2026 is already settled for this unit; date the item in an unsettled month."}
+R {"sec": 19, "check": "U3 Aug (no expenses): fee 5,000, VAT 250, owners 94,750 (56,850 / 37,900)", "ok": true, "detail": ""}
+R {"sec": 16, "check": "U2 Jan-Jul each: revenue 9,000, fee 450, VAT 22.50, owners 8,527.50; Aug: 7,081.25", "ok": true, "detail": ""}
+R {"sec": 16, "check": "September cannot be settled before the month ends", "ok": true, "detail": "OwnerAccountingError: September 2026 has not ended yet; it can be settled from 2026-10-01."}
+R {"sec": 16, "check": "Rental Income Clearing nets to 0 for both managed units after settlement", "ok": true, "detail": "(Decimal('0.00'), Decimal('0.00'))"}
+R {"sec": 16, "check": "management fee is company income: 4200 = 3,525 (U2) + 9,250 (U3); VAT 2420 = 176.25 + 462.50", "ok": true, "detail": "(Decimal('-12775.00'), Decimal('-638.75'))"}
+R {"sec": 20, "check": "owner 1 (quarterly): due for the quarter ended 30 Jun = Jan-Jun 6 x 8,527.50 = 51,165.00 (Jul/Aug settled monthly, paid next quarter)", "ok": true, "detail": "(datetime.date(2026, 6, 30), Decimal('51165.00'))"}
+R {"sec": 20, "check": "payout maker cannot approve it", "ok": true, "detail": "WorkflowError: A payout must be approved by someone other than the person who created it."}
+R {"sec": 20, "check": "payout: Dr Owner Payables 51,165 (owner 1) / Cr Bank 51,165; owner 1 still owed Jul + Aug 15,608.75", "ok": true, "detail": "15608.75"}
+R {"sec": 20, "check": "owner 2 (monthly): due to 31 Aug = 48,172.50 + 56,850 = 105,022.50, paid; balance 0", "ok": true, "detail": "(datetime.date(2026, 8, 31), Decimal('105022.50'))"}
+R {"sec": 20, "check": "payout above the owner's payable balance (70,015) refused", "ok": true, "detail": "WorkflowError: The payout (80000.00) is more than the owner's payable balance (70015.00)."}
+R {"sec": 20, "check": "owner 3 payable 70,015 (32,115 + 37,900), unpaid", "ok": true, "detail": "70015.00"}
+R {"sec": 29, "check": "adjustment maker cannot approve it", "ok": true, "detail": "WorkflowError: An adjustment must be approved by someone other than its creator."}
+R {"sec": 17, "check": "vendor paid via approved adjustment: Vendor Payables = 10,000 (U3 repairs still owed)", "ok": true, "detail": "-10000.00"}
+R {"sec": 24, "check": "AMC 12,000 monthly: 12 lines of 1,000 on each month end", "ok": true, "detail": ""}
+R {"sec": 24, "check": "AMC booked: Dr Prepaid Expenses 12,000 / Cr Bank 12,000 (no VAT on this expense type)", "ok": true, "detail": ""}
+R {"sec": 24, "check": "insurance 10,000 quarterly owed to vendor: Dr Prepaid 10,000 + VAT Input 500 / Cr Vendor Payables 10,500; 4 lines of 2,500", "ok": true, "detail": ""}
+R {"sec": 24, "check": "rounding: 1,000 over 3 months = 333.33 + 333.33 + 333.34 (last absorbs)", "ok": true, "detail": ""}
+R {"sec": 24, "check": "daily job: AMC Jan-Aug, insurance Q1-Q2, licence, rounding lines, subscription Apr-Aug posted; nothing dated after today", "ok": true, "detail": "({'posted': 19, 'blocked': 1, 'failed': 0}, {'posted': 0, 'blocked': 1, 'failed': 0})"}
+R {"sec": 30, "check": "prepaid job run twice: second run posts nothing (no duplicate journals per line)", "ok": true, "detail": "{'posted': 0, 'blocked': 1, 'failed': 0}"}
+R {"sec": 24, "check": "period lock: the June 2025 line stays Scheduled while the period is closed (flagged, not posted)", "ok": true, "detail": "Accounting period 'TEST-FIN Jun 2025' is closed; nothing can be posted on 2025-06-30."}
+R {"sec": 29, "check": "adjustment dated in a closed period is refused", "ok": true, "detail": "PeriodClosedError: Accounting period 'TEST-FIN Jun 2025' is closed; nothing can be posted on 2025-06-15."}
+R {"sec": 24, "check": "after reopening, the June 2025 line posts; schedule Completed", "ok": true, "detail": "('POSTED', 'COMPLETED')"}
+R {"sec": 24, "check": "completion: yearly licence and the 3-month schedule are Completed", "ok": true, "detail": ""}
+R {"sec": 24, "check": "monthly recognition: Dr AMC expense (5100) 1,000 / Cr Prepaid 1,000", "ok": true, "detail": ""}
+R {"sec": 24, "check": "cancellation with refund: Dr Bank 3,500 / Cr Prepaid 3,500; 7 unposted lines Skipped, 5 posted lines kept", "ok": true, "detail": ""}
+R {"sec": 24, "check": "prepaid report reconciles with the ledger: remaining 9,000 (AMC 4,000 + insurance 5,000) = Prepaid Expenses balance", "ok": true, "detail": "{'amount': Decimal('30800.00'), 'recognized': Decimal('18300.00'), 'cleared': Decimal('3500.00'), 'remaining': Decimal('9000.00'), 'ledger_balance': Decimal('9000.00'), 'reconciled': True}"}
+R {"sec": 29, "check": "correction: reversal mirrors the original; net effect is the corrected 90", "ok": true, "detail": ""}
+R {"sec": 29, "check": "a reversal cannot itself be reversed", "ok": true, "detail": "WorkflowError: A reversal cannot itself be reversed; post a new correcting journal instead."}
+R {"sec": 29, "check": "posted journals are immutable: save, update, delete of the journal and of its lines all refused", "ok": true, "detail": "[True, True, True, True, True]"}
+R {"sec": 30, "check": "each posted event processed again (7 event types): same journal returned, no new journal", "ok": true, "detail": "{'CHEQUE_CLEARED': 'POSTED', 'CHEQUE_DEPOSITED': 'POSTED', 'TERMINATION_SETTLED': 'POSTED', 'REVENUE_RECOGNIZED': 'POSTED', 'INVOICE_ISSUED': 'POSTED', 'DEPOSIT_TRANSFERRED': 'POSTED', 'COLLECTION_SETTLED': 'POSTED'}"}
+R {"sec": 25, "check": "statement import: 7 lines", "ok": true, "detail": "7"}
+R {"sec": 25, "check": "suggestions: exact-amount money-in journals (L3 cheque: 3 candidates of 105,000; card/gateway/transfer: 1 each)", "ok": true, "detail": "{'TFIN L3 Sep cheque': 3, 'TFIN card batch': 1, 'TFIN gateway batch': 2, 'TFIN L1R transfer': 1}"}
+R {"sec": 25, "check": "a reversed journal is not offered as a bank match", "ok": false, "detail": "reversed journal(s) [400] suggested for the gateway line"}
+R {"sec": 25, "check": "no suggestion for the fee-reduced amount, the payout (money out) or the interest line", "ok": true, "detail": ""}
+R {"sec": 25, "check": "a statement line already matched cannot be confirmed to a second journal", "ok": true, "detail": "BankStatementMatchError: bank_statement_line already has a different confirmed match"}
+R {"sec": 25, "check": "manual matches confirmed: balance cheque (15,660 vs 15,662.50) and owner payout (money out)", "ok": true, "detail": ""}
+R {"sec": 25, "check": "unmatched: only the interest line stays unreconciled", "ok": true, "detail": "['TFIN bank interest']"}
+R {"sec": 25, "check": "reconciliation created no journal (no duplicate accounting)", "ok": true, "detail": "0"}
+R {"sec": 25, "check": "re-importing the same statement file is detected (no duplicate statement lines)", "ok": false, "detail": "2 identical lines after importing the file twice"}
+R {"sec": 26, "check": "consolidated by external (Oracle) code: debit, credit and journal count per code match the ledger", "ok": true, "detail": "{}"}
+R {"sec": 26, "check": "several product accounts roll up into one code (VAT out 2410+2420 -> 202000102; payables 2320+2500 -> 202050101)", "ok": true, "detail": "{'202000102': ['2410', '2420'], '202050101': ['2320', '2500']}"}
+R {"sec": 26, "check": "unmapped accounts grouped as 'Mapping pending', no invented code", "ok": true, "detail": "['1120', '1130', '1140', '1300', '2120', '2310', '4320']"}
+R {"sec": 26, "check": "report totals: debit = credit, and = whole ledger", "ok": true, "detail": "{'opening_balance': Decimal('0.00'), 'total_debit': Decimal('2949915.74'), 'total_credit': Decimal('2949915.74'), 'difference': Decimal('0.00'), 'closing_balance': Decimal('0.00'), 'transaction_count': 230, 'account_count': 25, 'unmapped_account_count': 7}"}
+R {"sec": 26, "check": "Excel export: sheets Consolidated / Transaction Details / Mapping / Report Info", "ok": true, "detail": "['Consolidated', 'Transaction Details', 'Mapping', 'Report Info']"}
+R {"sec": 26, "check": "Excel Consolidated total row = report totals", "ok": true, "detail": "('Total', None, None, None, None, 0, 2949915.74, 2949915.74, 0, 230)"}
+R {"sec": 26, "check": "Excel Transaction Details: one row per ledger line, debits/credits add up", "ok": true, "detail": "(576, 576)"}
+R {"sec": 26, "check": "Excel Mapping sheet lists every account with its mapping status ('Mapping pending' for the unmapped)", "ok": true, "detail": "[('Account Mapping', None, None, None, None, None, None, None, None), ('Account', 'Product Account Code', 'Account Type', 'Postable', 'Active', 'External Code', 'Mapping Status', 'Last Changed', 'Changed By'), ('Assets', '1000', 'Asset', 'No', 'Yes', None, 'Group (no postings)', None, None)]"}
+R {"sec": 27, "check": "Trial Balance: total debit 2949915.74 = total credit 2949915.74", "ok": true, "detail": "(Decimal('2949915.74'), Decimal('2949915.74'))"}
+R {"sec": 27, "check": "General Ledger (2026 YTD, 2025 as opening): opening + debits - credits = closing for every account", "ok": true, "detail": "[]"}
+R {"sec": 28, "check": "1210 Tenant Receivables: expected 8666.63 actual 8666.63", "ok": true, "detail": ""}
+R {"sec": 28, "check": "1120 Bank \u2013 Operating: expected 439975.54 actual 439975.54", "ok": true, "detail": ""}
+R {"sec": 28, "check": "1110 Cash in Hand: expected 420 actual 420.00", "ok": true, "detail": ""}
+R {"sec": 28, "check": "1130 Cheques in Bank (Clearing): expected 0 actual 0.00", "ok": true, "detail": ""}
+R {"sec": 28, "check": "1140 Card / Gateway Settlement Pending: expected 0 actual 0.00", "ok": true, "detail": ""}
+R {"sec": 28, "check": "1220 VAT Input Recoverable: expected 500 actual 500.00", "ok": true, "detail": ""}
+R {"sec": 28, "check": "1300 Prepaid Expenses: expected 9000 actual 9000.00", "ok": true, "detail": ""}
+R {"sec": 28, "check": "2110 Security Deposits Held: expected -5000 actual -5000.00", "ok": true, "detail": ""}
+R {"sec": 28, "check": "2120 Tenant Refunds Payable: expected 0 actual 0.00", "ok": true, "detail": ""}
+R {"sec": 28, "check": "2200 Deferred Rental Income: expected -109000 actual -109000.00", "ok": true, "detail": ""}
+R {"sec": 28, "check": "2310 Rental Income Clearing \u2013 Managed Units: expected 0 actual 0.00", "ok": true, "detail": ""}
+R {"sec": 28, "check": "2320 Owner Payables: expected -85623.75 actual -85623.75", "ok": true, "detail": ""}
+R {"sec": 28, "check": "2410 VAT Output \u2013 Rent & Charges: expected -20672.38 actual -20672.38", "ok": true, "detail": ""}
+R {"sec": 28, "check": "2420 VAT Output \u2013 Management Fees: expected -638.75 actual -638.75", "ok": true, "detail": ""}
+R {"sec": 28, "check": "2500 Vendor Payables: expected -10000 actual -10000.00", "ok": true, "detail": ""}
+R {"sec": 28, "check": "4100 Rental Income \u2013 Company Units: expected -183458.33 actual -183458.33", "ok": true, "detail": ""}
+R {"sec": 28, "check": "4110 Parking Rental Income: expected 0 actual 0", "ok": true, "detail": ""}
+R {"sec": 28, "check": "4190 Discount Allowed on Rent: expected 0 actual 0", "ok": true, "detail": ""}
+R {"sec": 28, "check": "4200 Management Fee Income: expected -12775 actual -12775.00", "ok": true, "detail": ""}
+R {"sec": 28, "check": "4250 Leasing Commission Income: expected -8000 actual -8000.00", "ok": true, "detail": ""}
+R {"sec": 28, "check": "4260 Renewal Commission Income: expected -2000 actual -2000.00", "ok": true, "detail": ""}
+R {"sec": 28, "check": "4310 Cheque Return Charges: expected -600 actual -600.00", "ok": true, "detail": ""}
+R {"sec": 28, "check": "4320 Payment Channel Charges: expected -14.20 actual -14.20", "ok": true, "detail": ""}
+R {"sec": 28, "check": "4330 Penalty Income: expected -29500 actual -29500.00", "ok": true, "detail": ""}
+R {"sec": 28, "check": "4340 Other Charges Income: expected -9750 actual -9750.00", "ok": true, "detail": ""}
+R {"sec": 28, "check": "5100 Property Operating Expenses: expected 18300 actual 18300.00", "ok": true, "detail": ""}
+R {"sec": 28, "check": "5200 Bank & Gateway Fees: expected 170.24 actual 170.24", "ok": true, "detail": ""}
+R {"sec": 28, "check": "3100 Owner's Capital: expected 0 actual 0", "ok": true, "detail": ""}
+R {"sec": 28, "check": "5300 Payroll (manual allocation): expected 0 actual 0", "ok": true, "detail": ""}
+ACCOUNTS [{"code": "1210", "name": "Tenant Receivables", "expected": "8666.63", "actual": "8666.63", "gl": "8666.63", "diff": "0.00", "ok": true}, {"code": "1120", "name": "Bank \u2013 Operating", "expected": "439975.54", "actual": "439975.54", "gl": "439975.54", "diff": "0.00", "ok": true}, {"code": "1110", "name": "Cash in Hand", "expected": "420", "actual": "420.00", "gl": "420.00", "diff": "0.00", "ok": true}, {"code": "1130", "name": "Cheques in Bank (Clearing)", "expected": "0", "actual": "0.00", "gl": "0.00", "diff": "0.00", "ok": true}, {"code": "1140", "name": "Card / Gateway Settlement Pending", "expected": "0", "actual": "0.00", "gl": "0.00", "diff": "0.00", "ok": true}, {"code": "1220", "name": "VAT Input Recoverable", "expected": "500", "actual": "500.00", "gl": "500.00", "diff": "0.00", "ok": true}, {"code": "1300", "name": "Prepaid Expenses", "expected": "9000", "actual": "9000.00", "gl": "9000.00", "diff": "0.00", "ok": true}, {"code": "2110", "name": "Security Deposits Held", "expected": "-5000", "actual": "-5000.00", "gl": "-5000.00", "diff": "0.00", "ok": true}, {"code": "2120", "name": "Tenant Refunds Payable", "expected": "0", "actual": "0.00", "gl": "0.00", "diff": "0.00", "ok": true}, {"code": "2200", "name": "Deferred Rental Income", "expected": "-109000", "actual": "-109000.00", "gl": "-109000.00", "diff": "0.00", "ok": true}, {"code": "2310", "name": "Rental Income Clearing \u2013 Managed Units", "expected": "0", "actual": "0.00", "gl": "0.00", "diff": "0.00", "ok": true}, {"code": "2320", "name": "Owner Payables", "expected": "-85623.75", "actual": "-85623.75", "gl": "-85623.75", "diff": "0.00", "ok": true}, {"code": "2410", "name": "VAT Output \u2013 Rent & Charges", "expected": "-20672.38", "actual": "-20672.38", "gl": "-20672.38", "diff": "0.00", "ok": true}, {"code": "2420", "name": "VAT Output \u2013 Management Fees", "expected": "-638.75", "actual": "-638.75", "gl": "-638.75", "diff": "0.00", "ok": true}, {"code": "2500", "name": "Vendor Payables", "expected": "-10000", "actual": "-10000.00", "gl": "-10000.00", "diff": "0.00", "ok": true}, {"code": "4100", "name": "Rental Income \u2013 Company Units", "expected": "-183458.33", "actual": "-183458.33", "gl": "-183458.33", "diff": "0.00", "ok": true}, {"code": "4110", "name": "Parking Rental Income", "expected": "0", "actual": "0", "gl": "0", "diff": "0", "ok": true}, {"code": "4190", "name": "Discount Allowed on Rent", "expected": "0", "actual": "0", "gl": "0", "diff": "0", "ok": true}, {"code": "4200", "name": "Management Fee Income", "expected": "-12775", "actual": "-12775.00", "gl": "-12775.00", "diff": "0.00", "ok": true}, {"code": "4250", "name": "Leasing Commission Income", "expected": "-8000", "actual": "-8000.00", "gl": "-8000.00", "diff": "0.00", "ok": true}, {"code": "4260", "name": "Renewal Commission Income", "expected": "-2000", "actual": "-2000.00", "gl": "-2000.00", "diff": "0.00", "ok": true}, {"code": "4310", "name": "Cheque Return Charges", "expected": "-600", "actual": "-600.00", "gl": "-600.00", "diff": "0.00", "ok": true}, {"code": "4320", "name": "Payment Channel Charges", "expected": "-14.20", "actual": "-14.20", "gl": "-14.20", "diff": "0.00", "ok": true}, {"code": "4330", "name": "Penalty Income", "expected": "-29500", "actual": "-29500.00", "gl": "-29500.00", "diff": "0.00", "ok": true}, {"code": "4340", "name": "Other Charges Income", "expected": "-9750", "actual": "-9750.00", "gl": "-9750.00", "diff": "0.00", "ok": true}, {"code": "5100", "name": "Property Operating Expenses", "expected": "18300", "actual": "18300.00", "gl": "18300.00", "diff": "0.00", "ok": true}, {"code": "5200", "name": "Bank & Gateway Fees", "expected": "170.24", "actual": "170.24", "gl": "170.24", "diff": "0.00", "ok": true}, {"code": "3100", "name": "Owner's Capital", "expected": "0", "actual": "0", "gl": "0", "diff": "0", "ok": true}, {"code": "5300", "name": "Payroll (manual allocation)", "expected": "0", "actual": "0", "gl": "0", "diff": "0", "ok": true}]
+R {"sec": 28, "check": "expected ledger itself balances (sum of expected balances = 0)", "ok": true, "detail": "0.00"}
+R {"sec": 28, "check": "tenant balances: T1 5,841.63 (L1 cheque 12 in hand), T2 2,825 (L2 rent 3 on cheque 4), others 0", "ok": true, "detail": "{1: Decimal('5841.63'), 2: Decimal('2825.00'), 3: Decimal('0.00'), 4: Decimal('0.00'), 5: Decimal('0.00')}"}
+R {"sec": 27, "check": "Balance Sheet balances (assets = liabilities + equity)", "ok": true, "detail": "124.88"}
+R {"sec": 27, "check": "Balance Sheet Tenant Receivables = ledger balance 8,666.63", "ok": false, "detail": "balance sheet shows -8247.50"}
+R {"sec": 27, "check": "Chart of Accounts balance for Bank = ledger balance", "ok": false, "detail": "{'id': 970, 'name': 'Bank \u2013 Operating', 'account_type': 'Asset', 'account_subtype': None, 'balance': Decimal('-137214.74')}"}
+R {"sec": 29, "check": "no unbalanced posted journal", "ok": true, "detail": "[]"}
+R {"sec": 29, "check": "no orphan ledger lines", "ok": true, "detail": "0"}
+R {"sec": 29, "check": "no negative line or line with both debit and credit", "ok": true, "detail": "0"}
+R {"sec": 29, "check": "nothing posted to header (non-postable) accounts", "ok": true, "detail": "0"}
+R {"sec": 29, "check": "every posted business event (177) has its journal; no journal without an event", "ok": true, "detail": "([], 177, 177)"}
+R {"sec": 29, "check": "no duplicate posting for the same source document and step", "ok": true, "detail": "[]"}
+R {"sec": 29, "check": "no future-dated journal", "ok": true, "detail": "0"}
+R {"sec": 29, "check": "no direct ledger entries: every journal comes from an operational source or an approved adjustment (maker != checker, reason given)", "ok": true, "detail": "['ADJUSTMENT', 'CHEQUE', 'COLLECTION', 'CREDIT_NOTE', 'EXPENSE', 'INVOICE', 'OWNER_CHARGE', 'OWNER_PAYOUT', 'OWNER_SETTLEMENT', 'PREPAID', 'PREPAID_RECOGNITION', 'PROVIDER_FEE', 'REFUND', 'RENEWAL', 'REVENUE_RECOGNITION', 'TERMINATION']"}
+R {"sec": 29, "check": "no unexpected balances: clearing accounts 0, cash/prepaid >= 0, no lease with a debit deposit balance", "ok": true, "detail": "({'Cheques in Bank': Decimal('0.00'), 'Settlement Pending': Decimal('0.00'), 'Tenant Refunds Payable': Decimal('0.00'), 'Clearing': Decimal('0.00'), 'Cash (>=0)': Decimal('420.00'), 'Prepaid (>=0)': Decimal('9000.00')}, {'L1': Decimal('0.00'), 'L1R': Decimal('0.00'), 'L2': Decimal('-5000.00'), 'L3': Decimal('0'), 'L4': Decimal('0.00'), 'L5': Decimal('0.00')})"}
+R {"sec": 29, "check": "no owner with a negative payable", "ok": true, "detail": "{29: Decimal('15608.75'), 30: Decimal('0.00'), 31: Decimal('70015.00')}"}
+FINDINGS [{"test": "Provider settlement idempotency", "journal": "JE0000400", "settlement": 20}, {"test": "Manual bank match", "note": "confirm accepted 15,660.00 against a 15,662.50 journal with no amount warning"}]
+TOTALS {"tb_debit": "2949915.74", "tb_credit": "2949915.74", "journals": 230, "lines": 576}
+SUMMARY 134/139 passed

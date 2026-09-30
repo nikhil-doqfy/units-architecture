@@ -1,0 +1,54 @@
+diff --git a/ledger/reconciliation.py b/ledger/reconciliation.py
+index 379284d..518384b 100644
+--- a/ledger/reconciliation.py
++++ b/ledger/reconciliation.py
+@@ -196,6 +196,9 @@ def _unreconciled_bank_journal_entries(finance_pmc_profile):
+             lines__debit__gt=0,
+         )
+         .exclude(id__in=confirmed_journal_entry_ids)
++        # a reversed journal and its reversal cancel out: no bank money to match
++        .exclude(reversing_entries__isnull=False)
++        .exclude(reversed_journal_entry__isnull=False)
+         .distinct()
+     )
+ 
+diff --git a/ledger/reports.py b/ledger/reports.py
+index f9be52e..48bb178 100644
+--- a/ledger/reports.py
++++ b/ledger/reports.py
+@@ -133,6 +133,17 @@ def compute_profit_loss(finance_pmc_profile, start_date, end_date):
+     }
+ 
+ 
++def _inception_date(finance_pmc_profile):
++    """Start of the since-inception window: the profile's creation date, or the
++    earliest journal date if earlier -- journals for business before Finance was
++    activated (backdated leases, migrated history) are dated before the profile."""
++    from ledger.models import JournalEntry
++
++    earliest = JournalEntry.objects.filter(finance_pmc_profile=finance_pmc_profile).aggregate(d=Min("entry_date"))["d"]
++    created = finance_pmc_profile.created.date()
++    return min(created, earliest) if earliest else created
++
++
+ def compute_balance_sheet(finance_pmc_profile, as_of_date):
+     """Story 3.4: Balance Sheet report aggregation.
+ 
+@@ -170,7 +181,7 @@ def compute_balance_sheet(finance_pmc_profile, as_of_date):
+     account dict has `id`, `name`,
+     `account_type`, `total_debit`, `total_credit`, `balance`.
+     """
+-    since_inception = finance_pmc_profile.created.date()
++    since_inception = _inception_date(finance_pmc_profile)
+ 
+     trial_balance = compute_trial_balance(finance_pmc_profile, since_inception, as_of_date)
+     profit_loss = compute_profit_loss(finance_pmc_profile, since_inception, as_of_date)
+@@ -373,7 +384,7 @@ def compute_chart_of_accounts(finance_pmc_profile):
+     `None` for any account without a subtype (Income/Expense accounts, or
+     any pre-existing row left uncategorized by the Story 5.3 migration).
+     """
+-    since_inception = finance_pmc_profile.created.date()
++    since_inception = _inception_date(finance_pmc_profile)
+     today = timezone.localdate()
+ 
+     trial_balance = compute_trial_balance(finance_pmc_profile, since_inception, today)

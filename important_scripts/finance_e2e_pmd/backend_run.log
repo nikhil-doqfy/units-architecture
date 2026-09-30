@@ -1,0 +1,152 @@
+/home
+AWS REGION: ap-south-1
+R {"sec": 0, "check": "business date is 2026-09-29 (expected figures assume it)", "ok": true, "detail": "2026-09-29"}
+R {"sec": 2, "check": "PMC 3 is PMD", "ok": true, "detail": "PMD"}
+R {"sec": 2, "check": "dataset: 1 property, 5 units (3 INTERNAL, 2 MANAGED), 3 owners, 5 tenants, 1 bank account, 9 charges", "ok": true, "detail": ""}
+/usr/local/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1409: RuntimeWarning: DateTimeField LeaseTransaction.cheque_date received a naive datetime (2025-09-01 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s received a naive datetime (%s)"
+/usr/local/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1409: RuntimeWarning: DateTimeField LeaseTransaction.cheque_date received a naive datetime (2025-10-01 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s received a naive datetime (%s)"
+/usr/local/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1409: RuntimeWarning: DateTimeField LeaseTransaction.cheque_date received a naive datetime (2025-11-01 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s received a naive datetime (%s)"
+/usr/local/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1409: RuntimeWarning: DateTimeField LeaseTransaction.cheque_date received a naive datetime (2025-12-01 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s received a naive datetime (%s)"
+/usr/local/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1409: RuntimeWarning: DateTimeField LeaseTransaction.cheque_date received a naive datetime (2026-01-01 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s received a naive datetime (%s)"
+/usr/local/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1409: RuntimeWarning: DateTimeField LeaseTransaction.cheque_date received a naive datetime (2026-02-01 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s received a naive datetime (%s)"
+/usr/local/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1409: RuntimeWarning: DateTimeField LeaseTransaction.cheque_date received a naive datetime (2026-03-01 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s received a naive datetime (%s)"
+/usr/local/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1409: RuntimeWarning: DateTimeField LeaseTransaction.cheque_date received a naive datetime (2026-04-01 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s received a naive datetime (%s)"
+/usr/local/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1409: RuntimeWarning: DateTimeField LeaseTransaction.cheque_date received a naive datetime (2026-05-01 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s received a naive datetime (%s)"
+/usr/local/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1409: RuntimeWarning: DateTimeField LeaseTransaction.cheque_date received a naive datetime (2026-06-01 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s received a naive datetime (%s)"
+/usr/local/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1409: RuntimeWarning: DateTimeField LeaseTransaction.cheque_date received a naive datetime (2026-07-01 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s received a naive datetime (%s)"
+/usr/local/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1409: RuntimeWarning: DateTimeField LeaseTransaction.cheque_date received a naive datetime (2026-08-01 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s received a naive datetime (%s)"
+R {"sec": 4, "check": "L1: 12 rent installments of 5,000 net + 250 VAT (5% commercial) = 5,250", "ok": true, "detail": ""}
+R {"sec": 4, "check": "L1: gross 60,000 - discount 0 = net 60,000 over the installments", "ok": true, "detail": ""}
+R {"sec": 7, "check": "L1: one leasing commission 2,000 + VAT 5% 100 = 2,100, own invoice", "ok": true, "detail": ""}
+R {"sec": 6, "check": "L1: security deposit 5,000 installment, no VAT, no invoice", "ok": true, "detail": ""}
+R {"sec": 4, "check": "LS00028: 12 equal cheques for the grand total 70100", "ok": true, "detail": "[(datetime.date(2025, 9, 1), Decimal('5841.67')), (datetime.date(2025, 10, 1), Decimal('5841.67')), (datetime.date(2025, 11, 1), Decimal('5841.67')), (datetime.date(2025, 12, 1), Decimal('5841.67')), (datetime.date(2026, 1, 1), Decimal('5841.67')), (datetime.date(2026, 2, 1), Decimal('5841.67')), (datetime.date(2026, 3, 1), Decimal('5841.67')), (datetime.date(2026, 4, 1), Decimal('5841.67')), (datetime.date(2026, 5, 1), Decimal('5841.67')), (datetime.date(2026, 6, 1), Decimal('5841.67')), (datetime.date(2026, 7, 1), Decimal('5841.67')), (datetime.date(2026, 8, 1), Decimal('5841.63'))]"}
+R {"sec": 4, "check": "LS00028: every cheque's allocations match the pay-order model", "ok": true, "detail": "[[('COMMISSION1', Decimal('2100.00')), ('DEPOSIT1', Decimal('3741.67'))], [('DEPOSIT1', Decimal('1258.33')), ('RENT1', Decimal('4583.34'))], [('RENT1', Decimal('666.66')), ('RENT2', Decimal('5175.01'))]]"}
+R {"sec": 8, "check": "LS00028: no cheque allocated above its face value", "ok": true, "detail": ""}
+R {"sec": 4, "check": "LS00028: invoice date = due date = date of the first cheque paying it (not the generation date)", "ok": true, "detail": "all match"}
+R {"sec": 4, "check": "L1: rent 1 (Sep 2025) is invoiced on 1 Oct 2025, the date of cheque 2 -- the first cheque paying it", "ok": true, "detail": "2025-10-01"}
+R {"sec": 3, "check": "PDC in hand has no accounting event", "ok": true, "detail": ""}
+R {"sec": 9, "check": "cheque cannot be deposited before the lease is activated", "ok": true, "detail": "ChequeActionError(): This lease isn't active yet; a cheque can be deposited after handover."}
+R {"sec": 5, "check": "L1 activated: 13 invoices issued (12 rent + commission), all dated on or before today", "ok": true, "detail": "13"}
+R {"sec": 5, "check": "INVOICE_ISSUED events carry net / VAT / total of the invoice", "ok": true, "detail": ""}
+R {"sec": 9, "check": "deposited: status DEPOSITED, expected clearing 3 Sep (deposit + 2 clearing days), allocations intact", "ok": true, "detail": ""}
+R {"sec": 9, "check": "deposit event: one line per allocation (commission 2,100 to AR, 3,741.67 to deposit held)", "ok": true, "detail": "[{'amount': '2100.00', 'dimensions': {'unit_id': 14, 'block_id': 56, 'lease_id': 28, 'tenant_id': 32, 'property_id': 15, 'installment_id': 131}, 'installment_id': 131, 'installment_type': 'COMMISSION'}, {'amount': '3741.67', 'dimensions': {'unit_id': 14, 'block_id': 56, 'lease_id': 28, 'tenant_id': 32, 'property_id': 15, 'installment_id': 130}, 'installment_id': 130, 'installment_type': 'DEPOSIT'}]"}
+R {"sec": 10, "check": "cleared: CREDITED, commission settled, deposit part-paid 3,741.67, 2 receipts (one per allocation)", "ok": true, "detail": ""}
+R {"sec": 30, "check": "clearing the same cheque twice is refused", "ok": true, "detail": "ChequeActionError(): Only a deposited cheque can be cleared."}
+R {"sec": 10, "check": "L1 cheques 2-11 cleared; deposit settled 5,000; rents 1-10 settled; cheque 12 still in hand", "ok": true, "detail": "[Decimal('5250.00'), Decimal('4658.37'), Decimal('0.00')]"}
+R {"sec": 13, "check": "L1 recognition: 12 monthly events of 5,000 (Sep 2025 - Aug 2026), dated month end, total 60,000", "ok": true, "detail": "[('2025-09', '5000.00'), ('2025-10', '5000.00'), ('2025-11', '5000.00')]"}
+R {"sec": 30, "check": "recognition job run again: no new events", "ok": true, "detail": ""}
+R {"sec": 30, "check": "invoice job run again: nothing issued twice", "ok": true, "detail": ""}
+/usr/local/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1409: RuntimeWarning: DateTimeField LeaseTransaction.cheque_date received a naive datetime (2026-09-01 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s received a naive datetime (%s)"
+/usr/local/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1409: RuntimeWarning: DateTimeField LeaseTransaction.cheque_date received a naive datetime (2026-10-01 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s received a naive datetime (%s)"
+/usr/local/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1409: RuntimeWarning: DateTimeField LeaseTransaction.cheque_date received a naive datetime (2026-11-01 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s received a naive datetime (%s)"
+/usr/local/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1409: RuntimeWarning: DateTimeField LeaseTransaction.cheque_date received a naive datetime (2026-12-01 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s received a naive datetime (%s)"
+/usr/local/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1409: RuntimeWarning: DateTimeField LeaseTransaction.cheque_date received a naive datetime (2027-01-01 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s received a naive datetime (%s)"
+/usr/local/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1409: RuntimeWarning: DateTimeField LeaseTransaction.cheque_date received a naive datetime (2027-02-01 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s received a naive datetime (%s)"
+/usr/local/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1409: RuntimeWarning: DateTimeField LeaseTransaction.cheque_date received a naive datetime (2027-03-01 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s received a naive datetime (%s)"
+/usr/local/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1409: RuntimeWarning: DateTimeField LeaseTransaction.cheque_date received a naive datetime (2027-04-01 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s received a naive datetime (%s)"
+/usr/local/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1409: RuntimeWarning: DateTimeField LeaseTransaction.cheque_date received a naive datetime (2027-05-01 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s received a naive datetime (%s)"
+/usr/local/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1409: RuntimeWarning: DateTimeField LeaseTransaction.cheque_date received a naive datetime (2027-06-01 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s received a naive datetime (%s)"
+/usr/local/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1409: RuntimeWarning: DateTimeField LeaseTransaction.cheque_date received a naive datetime (2027-07-01 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s received a naive datetime (%s)"
+/usr/local/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1409: RuntimeWarning: DateTimeField LeaseTransaction.cheque_date received a naive datetime (2027-08-01 00:00:00) while time zone support is active.
+  warnings.warn("DateTimeField %s received a naive datetime (%s)"
+R {"sec": 23, "check": "renewal: no new security deposit installment; deposit amount carried on the lease", "ok": true, "detail": ""}
+R {"sec": 23, "check": "renewal commission = the initial lease's commission (2,000) + 5% VAT, charged once", "ok": true, "detail": ""}
+R {"sec": 23, "check": "LS00029: 12 equal cheques for the grand total 71400", "ok": true, "detail": "[(datetime.date(2026, 9, 1), Decimal('5950.00')), (datetime.date(2026, 10, 1), Decimal('5950.00')), (datetime.date(2026, 11, 1), Decimal('5950.00')), (datetime.date(2026, 12, 1), Decimal('5950.00')), (datetime.date(2027, 1, 1), Decimal('5950.00')), (datetime.date(2027, 2, 1), Decimal('5950.00')), (datetime.date(2027, 3, 1), Decimal('5950.00')), (datetime.date(2027, 4, 1), Decimal('5950.00')), (datetime.date(2027, 5, 1), Decimal('5950.00')), (datetime.date(2027, 6, 1), Decimal('5950.00')), (datetime.date(2027, 7, 1), Decimal('5950.00')), (datetime.date(2027, 8, 1), Decimal('5950.00'))]"}
+R {"sec": 23, "check": "LS00029: every cheque's allocations match the pay-order model", "ok": true, "detail": "[[('COMMISSION1', Decimal('2100.00')), ('RENT1', Decimal('3850.00'))], [('RENT1', Decimal('1925.00')), ('RENT2', Decimal('4025.00'))], [('RENT2', Decimal('1750.00')), ('RENT3', Decimal('4200.00'))]]"}
+R {"sec": 8, "check": "LS00029: no cheque allocated above its face value", "ok": true, "detail": ""}
+R {"sec": 4, "check": "LS00029: invoice date = due date = date of the first cheque paying it (not the generation date)", "ok": true, "detail": "all match"}
+R {"sec": 23, "check": "renewal activated: old lease RENEWED, deposit transfer event 5,000 old lease -> renewal", "ok": true, "detail": ""}
+R {"sec": 23, "check": "renewal commission invoice is flagged as renewal (own income account)", "ok": true, "detail": ""}
+R {"sec": 15, "check": "L2: 120,000 gross - 12,000 discount = 108,000 net; 4 x (30,000 - 3,000 = 27,000), residential VAT 0", "ok": true, "detail": "[(Decimal('30000.00'), Decimal('3000.00'), Decimal('27000.00')), (Decimal('30000.00'), Decimal('3000.00'), Decimal('27000.00')), (Decimal('30000.00'), Decimal('3000.00'), Decimal('27000.00')), (Decimal('30000.00'), Decimal('3000.00'), Decimal('27000.00'))]"}
+R {"sec": 15, "check": "L2: discount kept on the invoices (subtotal 30,000, discount 3,000, net 27,000)", "ok": true, "detail": ""}
+R {"sec": 7, "check": "L2: commission 5% x 12 x 10,000 = 6,000 + 300 VAT", "ok": true, "detail": ""}
+R {"sec": 14, "check": "LS00030: 4 equal cheques for the grand total 119300", "ok": true, "detail": "[(datetime.date(2026, 1, 1), Decimal('29825.00')), (datetime.date(2026, 4, 1), Decimal('29825.00')), (datetime.date(2026, 7, 1), Decimal('29825.00')), (datetime.date(2026, 10, 1), Decimal('29825.00'))]"}
+R {"sec": 14, "check": "LS00030: every cheque's allocations match the pay-order model", "ok": true, "detail": "[[('COMMISSION1', Decimal('6300.00')), ('DEPOSIT1', Decimal('5000.00')), ('RENT1', Decimal('18525.00'))], [('RENT1', Decimal('8475.00')), ('RENT2', Decimal('21350.00'))], [('RENT2', Decimal('5650.00')), ('RENT3', Decimal('24175.00'))]]"}
+R {"sec": 8, "check": "LS00030: no cheque allocated above its face value", "ok": true, "detail": ""}
+R {"sec": 4, "check": "LS00030: invoice date = due date = date of the first cheque paying it (not the generation date)", "ok": true, "detail": "all match"}
+R {"sec": 14, "check": "quarterly installment of 27,000 net recognised 9,000 x 3 months, no day proration (Jan-Aug = 8 x 9,000)", "ok": true, "detail": "[('2026-01', '9000.00'), ('2026-02', '9000.00'), ('2026-03', '9000.00'), ('2026-04', '9000.00'), ('2026-05', '9000.00'), ('2026-06', '9000.00'), ('2026-07', '9000.00'), ('2026-08', '9000.00')]"}
+R {"sec": 8, "check": "LS00031: 12 equal cheques for the grand total 1260000", "ok": true, "detail": "[(datetime.date(2026, 7, 1), Decimal('105000.00')), (datetime.date(2026, 8, 1), Decimal('105000.00')), (datetime.date(2026, 9, 1), Decimal('105000.00')), (datetime.date(2026, 10, 1), Decimal('105000.00')), (datetime.date(2026, 11, 1), Decimal('105000.00')), (datetime.date(2026, 12, 1), Decimal('105000.00')), (datetime.date(2027, 1, 1), Decimal('105000.00')), (datetime.date(2027, 2, 1), Decimal('105000.00')), (datetime.date(2027, 3, 1), Decimal('105000.00')), (datetime.date(2027, 4, 1), Decimal('105000.00')), (datetime.date(2027, 5, 1), Decimal('105000.00')), (datetime.date(2027, 6, 1), Decimal"}
+R {"sec": 8, "check": "LS00031: every cheque's allocations match the pay-order model", "ok": true, "detail": "[[('RENT1', Decimal('105000.00'))], [('RENT2', Decimal('105000.00'))], [('RENT3', Decimal('105000.00'))]]"}
+R {"sec": 8, "check": "LS00031: no cheque allocated above its face value", "ok": true, "detail": ""}
+R {"sec": 4, "check": "LS00031: invoice date = due date = date of the first cheque paying it (not the generation date)", "ok": true, "detail": "all match"}
+R {"sec": 8, "check": "scenario 1 -- one cheque pays one installment (105,000 each)", "ok": true, "detail": ""}
+R {"sec": 8, "check": "LS00032: 12 equal cheques for the grand total 120000", "ok": true, "detail": "[(datetime.date(2026, 1, 1), Decimal('10000.00')), (datetime.date(2026, 2, 1), Decimal('10000.00')), (datetime.date(2026, 3, 1), Decimal('10000.00')), (datetime.date(2026, 4, 1), Decimal('10000.00')), (datetime.date(2026, 5, 1), Decimal('10000.00')), (datetime.date(2026, 6, 1), Decimal('10000.00')), (datetime.date(2026, 7, 1), Decimal('10000.00')), (datetime.date(2026, 8, 1), Decimal('10000.00')), (datetime.date(2026, 9, 1), Decimal('10000.00')), (datetime.date(2026, 10, 1), Decimal('10000.00')), (datetime.date(2026, 11, 1), Decimal('10000.00')), (datetime.date(2026, 12, 1), Decimal('10000.00'"}
+R {"sec": 8, "check": "LS00032: every cheque's allocations match the pay-order model", "ok": true, "detail": "[[('OTHER_CHARGE1', Decimal('1000.00')), ('DEPOSIT1', Decimal('2000.00')), ('RENT1', Decimal('7000.00'))], [('RENT1', Decimal('2750.00')), ('RENT2', Decimal('7250.00'))], [('RENT2', Decimal('2500.00')), ('RENT3', Decimal('7500.00'))]]"}
+R {"sec": 8, "check": "LS00032: no cheque allocated above its face value", "ok": true, "detail": ""}
+R {"sec": 4, "check": "LS00032: invoice date = due date = date of the first cheque paying it (not the generation date)", "ok": true, "detail": "all match"}
+R {"sec": 8, "check": "scenario 2 -- one cheque (10,000) pays charge 1,000 + deposit 2,000 + rent 7,000", "ok": true, "detail": "[('OTHER_CHARGE', 1, Decimal('1000.00')), ('DEPOSIT', 1, Decimal('2000.00')), ('RENT', 1, Decimal('7000.00'))]"}
+R {"sec": 8, "check": "scenario 3 -- one item (rent 1, 9,750) paid by two cheques (7,000 + 2,750)", "ok": true, "detail": ""}
+R {"sec": 8, "check": "scenario 4 -- cheque 2 pays two items (rent 1 2,750 + rent 2 7,250)", "ok": true, "detail": "[('RENT', 1, Decimal('2750.00')), ('RENT', 2, Decimal('7250.00'))]"}
+R {"sec": 11, "check": "whole cheque returned: BOUNCED, return #1, all 3 allocations kept", "ok": true, "detail": ""}
+R {"sec": 11, "check": "every item the cheque covered is unpaid again (charge, deposit, rent 1 paid 0)", "ok": true, "detail": "[('OTHER_CHARGE', Decimal('0.00'), 'INVOICED'), ('DEPOSIT', Decimal('0.00'), 'SCHEDULED'), ('RENT', Decimal('0.00'), 'INVOICED')]"}
+R {"sec": 11, "check": "return charge: separate debit note 200 + 5% VAT = 210 (not added to the replacement)", "ok": true, "detail": "INV-3-000033"}
+R {"sec": 11, "check": "return event reverses each allocation (charge 1,000, deposit 2,000, rent 7,000)", "ok": true, "detail": ""}
+R {"sec": 11, "check": "after return #1 a non-cheque payment is refused (replacement required)", "ok": true, "detail": "CollectionError(replacement_required): A cheque for this installment was returned; a replacement cheque is required."}
+R {"sec": 12, "check": "replacement covers the same items for the same amounts, linked to the returned cheque", "ok": true, "detail": "[('OTHER_CHARGE', 1, Decimal('1000.00')), ('DEPOSIT', 1, Decimal('2000.00')), ('RENT', 1, Decimal('7000.00'))]"}
+R {"sec": 12, "check": "replacement cleared: charge, deposit settled; rent 1 paid 7,000 -- once, no duplicate", "ok": true, "detail": ""}
+R {"sec": 21, "check": "cash: return charge 210, no channel charge", "ok": true, "detail": "{'installment_id': 177, 'installment_type': 'OTHER_CHARGE', 'payment_method_id': 1, 'payment_method': 'Cash', 'outstanding': Decimal('210.00'), 'charge_id': None, 'charge_description': None, 'charge_amount': 0, 'charge_vat_rate': 0, 'charge_vat': 0, 'total': Decimal('210.00')}"}
+R {"sec": 22, "check": "termination preview lists the cheque in clearing as a blocker", "ok": true, "detail": "['1 cheque(s) are deposited and not yet cleared or returned.']"}
+R {"sec": 22, "check": "termination blocked while a cheque is deposited and not cleared / returned", "ok": true, "detail": "TerminationError(cheque_in_clearing): 1 cheque(s) are deposited and not yet cleared or returned."}
+R {"sec": 15, "check": "L4 (INTERNAL): 72,000 - 7,200 = 64,800; each 6,000 - 600 = 5,400", "ok": true, "detail": ""}
+R {"sec": 8, "check": "LS00033: 12 equal cheques for the grand total 74800", "ok": true, "detail": "[(datetime.date(2026, 3, 1), Decimal('6233.33')), (datetime.date(2026, 4, 1), Decimal('6233.33')), (datetime.date(2026, 5, 1), Decimal('6233.33')), (datetime.date(2026, 6, 1), Decimal('6233.33')), (datetime.date(2026, 7, 1), Decimal('6233.33')), (datetime.date(2026, 8, 1), Decimal('6233.33')), (datetime.date(2026, 9, 1), Decimal('6233.33')), (datetime.date(2026, 10, 1), Decimal('6233.33')), (datetime.date(2026, 11, 1), Decimal('6233.33')), (datetime.date(2026, 12, 1), Decimal('6233.33')), (datetime.date(2027, 1, 1), Decimal('6233.33')), (datetime.date(2027, 2, 1), Decimal('6233.37'))]"}
+R {"sec": 8, "check": "LS00033: every cheque's allocations match the pay-order model", "ok": true, "detail": "[[('DEPOSIT1', Decimal('6233.33'))], [('DEPOSIT1', Decimal('3766.67')), ('RENT1', Decimal('2466.66'))], [('RENT1', Decimal('2933.34')), ('RENT2', Decimal('3299.99'))]]"}
+R {"sec": 8, "check": "LS00033: no cheque allocated above its face value", "ok": true, "detail": ""}
+R {"sec": 4, "check": "LS00033: invoice date = due date = date of the first cheque paying it (not the generation date)", "ok": true, "detail": "all match"}
+R {"sec": 8, "check": "L4 cheque 7 pays the rest of rent 6 (5,000.02) and part of rent 7 (1,233.31)", "ok": true, "detail": "[('RENT', 6, Decimal('5000.02')), ('RENT', 7, Decimal('1233.31'))]"}
+R {"sec": 11, "check": "return #1: count 1, replacement allowed", "ok": true, "detail": ""}
+R {"sec": 12, "check": "replacement 1 covers rent 6 5,000.02 + rent 7 1,233.31", "ok": true, "detail": "[('RENT', 6, Decimal('5000.02')), ('RENT', 7, Decimal('1233.31'))]"}
+R {"sec": 11, "check": "return #2 of the chain: count 2, both items now need a non-cheque payment", "ok": true, "detail": "(2, 2)"}
+R {"sec": 11, "check": "3rd cheque blocked: replacement of the returned replacement", "ok": true, "detail": "ChequeActionError(): This cheque has reached the maximum number of returns; its items must be paid by a non-cheque method."}
+R {"sec": 11, "check": "3rd cheque blocked: new cheque for the item", "ok": true, "detail": "ChequeActionError(): This installment has reached the maximum number of returned cheques; it must be paid by a non-cheque method."}
+R {"sec": 11, "check": "3rd cheque blocked: direct cheque record", "ok": true, "detail": "ChequeNotAllowedError(): This installment has reached the maximum number of returned cheques; it must be paid by a non-cheque method."}
+R {"sec": 11, "check": "3rd cheque blocked: cheque as a collection method", "ok": true, "detail": "CollectionError(cheque_method): Cheques are recorded as cheques (deposit / clear), not as a collection."}
+R {"sec": 21, "check": "bank transfer quote: 5,000.02, no channel charge", "ok": true, "detail": "{'installment_id': 183, 'installment_type': 'RENT', 'payment_method_id': 2, 'payment_method': 'Bank Transfer', 'outstanding': Decimal('5000.02'), 'charge_id': None, 'charge_description': None, 'charge_amount': 0, 'charge_vat_rate': 0, 'charge_vat': 0, 'total': Decimal('5000.02')}"}
+R {"sec": 21, "check": "gateway quote: 1,233.31 (rest is on the cheque in hand) + fee 10 + VAT 0.50 = 1,243.81", "ok": true, "detail": "{'installment_id': 184, 'installment_type': 'RENT', 'payment_method_id': 5, 'payment_method': 'Payment Gateway', 'outstanding': Decimal('1233.31'), 'charge_id': 15, 'charge_description': 'TEST-FIN Gateway Fee', 'charge_amount': Decimal('10.00'), 'charge_vat_rate': Decimal('5.000'), 'charge_vat': Decimal('0.50'), 'total': Decimal('1243.81')}"}
+R {"sec": 21, "check": "stale quote refused", "ok": true, "detail": "CollectionError(quote_changed): The amount to collect is 1243.81; re-check the quote before confirming."}
+R {"sec": 21, "check": "card quote: 210 + 2% fee 4.20 + VAT 0.21 = 214.41", "ok": true, "detail": "{'installment_id': 191, 'installment_type': 'OTHER_CHARGE', 'payment_method_id': 3, 'payment_method': 'Credit Card', 'outstanding': Decimal('210.00'), 'charge_id': 14, 'charge_description': 'TEST-FIN Card Fee 2%', 'charge_amount': Decimal('4.20'), 'charge_vat_rate': Decimal('5.000'), 'charge_vat': Decimal('0.21'), 'total': Decimal('214.41')}"}
+R {"sec": 22, "check": "termination date after today refused", "ok": true, "detail": "TerminationError(future_date): A termination can only be confirmed on or after its termination date."}
+R {"sec": 22, "check": "termination date in a previous month refused", "ok": true, "detail": "TerminationError(past_month): The termination date must be in the current month; earlier months are already recognized (and may be settled to owners)."}
+R {"sec": 22, "check": "L1R penalty = 2 x Lease.rent 5,500 = 11,000; 1,000 waived; VAT on 10,000 = 500", "ok": true, "detail": "{'charge_id': 16, 'calculated': '11000.00', 'waived': '1000.00', 'final': '10000.00', 'vat': '500.00', 'total': '10500.00'}"}
+R {"sec": 22, "check": "L1R misc charges: admin 525, other 315, breakage 945 (edited)", "ok": true, "detail": "[{'charge_id': 17, 'description': 'TEST-FIN Administrative Charge', 'amount': '500.00', 'vat': '25.00', 'total': '525.00'}, {'charge_id': 18, 'description': 'TEST-FIN Other Charge', 'amount': '300.00', 'vat': '15.00', 'total': '315.00'}, {'charge_id': 19, 'description': 'TEST-FIN Breakage / Damage Repair', 'amount': '900.00', 'vat': '45.00', 'total': '945.00'}]"}
+R {"sec": 22, "check": "L1R: only the terminated lease's items are in the settlement (previous lease's unpaid rent 12 excluded)", "ok": true, "detail": "[('RENT', 132)]"}
+R {"sec": 22, "check": "L1R: earned 4,812.50, collected 3,850, deposit 5,000 -> tenant owes 8,247.50", "ok": true, "detail": "{'rent_earned': '4812.50', 'rent_collected': '3850.00', 'deposit_held': '5000.00', 'other_dues': '0.00', 'net': '-8247.50', 'outcome': 'DUE'}"}
+R {"sec": 22, "check": "L1R breakdown lines add up to the final balance", "ok": true, "detail": "[('RENT', '5775.00'), ('CREDIT_NOTE', '-962.50'), ('PAID', '-3850.00'), ('PENALTY', '10500.00'), ('CHARGE', '525.00'), ('CHARGE', '315.00'), ('CHARGE', '945.00'), ('DEPOSIT', '-5000.00')]"}
+R {"sec": 22, "check": "waiver audited beside the calculation (calculated 11,000, waived 1,000, by maker)", "ok": true, "detail": ""}
+R {"sec": 22, "check": "L1R terminated, unit available; previous lease's cheque 12 untouched (still in hand)", "ok": true, "detail": ""}
+R {"sec": 22, "check": "L1R balance due 8,247.50 paid by bank transfer", "ok": true, "detail": ""}
+R {"sec": 22, "check": "L4 penalty 12,000 (2 x 6,000) fully waived", "ok": true, "detail": "{'charge_id': 16, 'calculated': '12000.00', 'waived': '12000.00', 'final': '0.00', 'vat': '0.00', 'total': '0.00'}"}
+R {"sec": 22, "check": "L4 refund = 10,000 deposit + 33,633.31 paid - 36,000 earned - 315 charge = 7,318.31", "ok": true, "detail": "{'deposit_held': '10000.00', 'rent_collected': '33633.31', 'rent_earned': '36000.00', 'other_dues': '0.00', 'charges_total': '315.00', 'net': '7318.31'}"}
+R {"sec": 22, "check": "L4: undeposited PDCs returned to tenant (cheques 8-12)", "ok": true, "detail": ""}
+R {"sec": 22, "check": "refund cannot be approved by its maker", "ok": true, "detail": "Exception(same_user): A refund must be approved by someone other than the person who recorded it."}
+R {"sec": 22, "check": "L4 refund: one payment of the full final amount 7,318.31, posted", "ok": true, "detail": ""}
+R {"sec": 22, "check": "L5 balance due = 2,000 + 87,000 - 82,875 - 20,475 - 1,312.50 = 15,662.50", "ok": true, "detail": "{'deposit_held': '2000.00', 'rent_collected': '87000.00', 'rent_earned': '82875.00', 'other_dues': '0.00', 'charges_total': '1312.50', 'net': '-15662.50'}"}
+R {"sec": 22, "check": "L5 balance due accepted as a cheque (15,662.50, one allocation)", "ok": true, "detail": "[('TERMINATION_BALANCE', 1, Decimal('15662.50'))]"}
+R {"sec": 22, "check": "L5 balance cheque cleared: balance settled", "ok": true, "detail": ""}
+R {"sec": 30, "check": "all jobs re-run for every lease: nothing new emitted", "ok": true, "detail": "0"}
+R {"sec": 29, "check": "one accounting event per business event (unique idempotency keys)", "ok": true, "detail": "177"}
+CTX {"pmc_id": 3, "maker_user_id": 33, "checker_user_id": 34, "bank_account_id": 3, "property_id": 15, "block_id": 56, "units": [14, 15, 16, 17, 18], "owners": [29, 30, 31], "tenants": [32, 33, 34, 35, 36], "admin_charge": 17, "service_charge": 20, "L1": 28, "L1_cheques": [252, 253, 254, 255, 256, 257, 258, 259, 260, 261, 262, 263], "L1_rent1_invoice": 111, "L1_commission_invoice": 123, "L1_deposit": 130, "L1R": 29, "L1R_cheques": [264, 265, 266, 267, 268, 269, 270, 271, 272, 273, 274, 275], "L1R_commission_invoice": 136, "L2": 30, "L2_cheques": [276, 277, 278, 279], "L2_rent1_invoice": 137, "L3": 31, "L3_cheques": [280, 281, 282, 283, 284, 285, 286, 287, 288, 289, 290, 291], "L5": 32, "L5_cheques": [293, 294, 295, 296, 297, 298, 299, 300, 301, 302, 303, 304], "L5_c1": 293, "L5_repl": 305, "L5_return_note": 167, "L5_rent1": 163, "L4": 33, "L4_cheques": [306, 307, 308, 309, 310, 311, 312, 313, 314, 315, 316, 317], "L4_c7": 312, "L4_r1": 318, "T_L1R": 4, "T_L4": 5, "T_L5": 6, "refund": 2, "L5_bal_cheque": 319}
+R {"sec": 1, "check": "all 177 accounting events delivered and POSTED in units-finance", "ok": true, "detail": "[]"}
+SUMMARY 100/100 passed
