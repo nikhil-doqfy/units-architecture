@@ -43,3 +43,4 @@ pypdf
 pdfkit
 drf-yasg
 html-testRunner
+selenium>=4.36,<5

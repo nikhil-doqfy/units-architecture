@@ -134,5 +134,58 @@ services:
     environment:
       API_URL: ${API_URL}
 
+  # Browser for the EJARI automation (units-backend ejari app). The ejari worker
+  # below drives it at http://dld_chromium:4444. The DLD login has a reCAPTCHA, so a person
+  # watches and clicks this browser through its noVNC viewer:
+  # http://localhost:7900 on the server, reached from your machine with
+  # `ssh -L 7900:localhost:7900 <server>`.
+  dld_chromium:
+    image: selenium/standalone-chromium:latest   # amd64 and arm64
+    container_name: units_dld_chromium
+    shm_size: 2gb
+    environment:
+      SE_NODE_SESSION_TIMEOUT: "3600"  # don't drop the browser while someone ticks the reCAPTCHA
+      SE_VNC_NO_PASSWORD: "true"       # only reachable on localhost / through the SSH tunnel
+      SE_SCREEN_WIDTH: "1366"
+      SE_SCREEN_HEIGHT: "900"
+      # Lets units_backend_ejari_worker fetch the contract PDF the user downloads
+      # in this browser (Selenium Grid managed downloads).
+      SE_NODE_ENABLE_MANAGED_DOWNLOADS: "true"
+    ports:
+      - "127.0.0.1:7900:7900"          # noVNC viewer -- never publish this on 0.0.0.0
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4444/status"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+
+  # Runs the EJARI automation jobs (units-backend ejari app) against dld_chromium.
+  # Its own queue with concurrency 1: the browser holds one session at a time, and
+  # a job can wait many minutes for a person to tick the reCAPTCHA in the viewer.
+  units_backend_ejari_worker:
+    container_name: units_backend_ejari_worker
+    build:
+      context: ./docker_config/units_backend
+    working_dir: /home/python/app
+    depends_on:
+      - postgres
+      - redis
+      - dld_chromium
+    volumes:
+      - "./microservices/units-backend:/home/python/app"
+      - "./logs:/logs"
+    command:
+      - /bin/bash
+      - -c
+      - |
+        echo "Starting units-backend EJARI worker ..."
+        celery -A property_management worker -Q ejari -c 1 -n ejari@%h -l info
+    environment:
+      SELENIUM_REMOTE_URL: http://dld_chromium:4444
+    env_file:
+      - .env
+    restart: unless-stopped
+
 volumes:
   postgres_data:
